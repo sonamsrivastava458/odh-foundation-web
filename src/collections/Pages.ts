@@ -1,0 +1,62 @@
+import type { CollectionConfig } from 'payload'
+import { isEditor, readPublished } from '../access'
+import { slugField } from '../fields/slug'
+import { seoField } from '../fields/seo'
+
+import { Hero } from '../blocks/Hero'
+import { StatsBar } from '../blocks/StatsBar'
+import { AboutStrip } from '../blocks/AboutStrip'
+import { HowYouCanHelp } from '../blocks/HowYouCanHelp'
+import { CategoryGrid } from '../blocks/CategoryGrid'
+import { FeaturedProjects } from '../blocks/FeaturedProjects'
+import { FeaturedCampaigns } from '../blocks/FeaturedCampaigns'
+import { TestimonialCarousel } from '../blocks/TestimonialCarousel'
+import { MediaGrid } from '../blocks/MediaGrid'
+import { TrustStrip } from '../blocks/TrustStrip'
+import { CTABand } from '../blocks/CTABand'
+
+import { populateBlocks } from '../hooks/populateBlocks'
+
+export const Pages: CollectionConfig = {
+  slug: 'pages',
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'slug', 'updatedAt'],
+    group: 'Content',
+  },
+  access: {
+    read: readPublished,
+    create: isEditor,
+    update: isEditor,
+    delete: isEditor,
+  },
+  hooks: {
+    // Reference blocks (featuredProjects, categoryGrid, …) ka data collections se
+    // laakar block.items me bhar deta hai
+    afterRead: [populateBlocks],
+  },
+  versions: { drafts: true },
+  fields: [
+    { name: 'title', type: 'text', required: true },
+    slugField('title'),
+    {
+      name: 'layout',
+      type: 'blocks',
+      minRows: 1,
+      blocks: [
+        Hero,
+        StatsBar,
+        AboutStrip,
+        CategoryGrid,
+        FeaturedCampaigns,
+        FeaturedProjects,
+        HowYouCanHelp,
+        TestimonialCarousel,
+        MediaGrid,
+        TrustStrip,
+        CTABand,
+      ],
+    },
+    seoField(),
+  ],
+}
