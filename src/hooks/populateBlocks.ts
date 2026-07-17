@@ -8,6 +8,7 @@ type ResolvableCollection =
   | 'testimonials'
   | 'media-posts'
   | 'project-categories'
+  | 'team-members'
 
 const MAX_LIMIT = 12
 const DEFAULT_LIMIT = 3
@@ -69,12 +70,12 @@ export const populateBlocks: CollectionAfterReadHook = async ({ doc, req }) => {
             block.mode === 'manual'
               ? manualSelection(block.projects)
               : await query({
-                  req,
-                  collection: 'projects',
-                  where: { featured: { equals: true } },
-                  limit: clampLimit(block.limit),
-                  sort: '-createdAt',
-                })
+                req,
+                collection: 'projects',
+                where: { featured: { equals: true } },
+                limit: clampLimit(block.limit),
+                sort: '-createdAt',
+              })
           break
 
         case 'featuredCampaigns':
@@ -82,15 +83,15 @@ export const populateBlocks: CollectionAfterReadHook = async ({ doc, req }) => {
             block.mode === 'manual'
               ? manualSelection(block.campaigns)
               : await query({
-                  req,
-                  collection: 'campaigns',
-                  where: {
-                    featured: { equals: true },
-                    active: { equals: true },
-                  },
-                  limit: clampLimit(block.limit),
-                  sort: '-createdAt',
-                })
+                req,
+                collection: 'campaigns',
+                where: {
+                  featured: { equals: true },
+                  active: { equals: true },
+                },
+                limit: clampLimit(block.limit),
+                sort: '-createdAt',
+              })
           break
 
         case 'testimonialCarousel':
@@ -98,11 +99,11 @@ export const populateBlocks: CollectionAfterReadHook = async ({ doc, req }) => {
             block.mode === 'manual'
               ? manualSelection(block.testimonials)
               : await query({
-                  req,
-                  collection: 'testimonials',
-                  limit: clampLimit(block.limit),
-                  sort: '-createdAt',
-                })
+                req,
+                collection: 'testimonials',
+                limit: clampLimit(block.limit),
+                sort: '-createdAt',
+              })
           break
 
         case 'mediaGrid': {
@@ -127,10 +128,20 @@ export const populateBlocks: CollectionAfterReadHook = async ({ doc, req }) => {
             sort: 'order',
           })
           break
+        case 'teamGrid':
+          // Founder ko bada dikhana frontend ka display concern hai (isFounder flag data mein hai)
+          block.items = await query({
+            req,
+            collection: 'team-members',
+            limit: 50,
+            sort: 'order',
+          })
+          break
 
         default:
           break
       }
+
     }),
   )
 

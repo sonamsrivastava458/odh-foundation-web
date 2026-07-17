@@ -8,8 +8,8 @@
 | **Spec** | `ODH-Foundation-Website-Technical-Implementation-Document.md` (referred to below as **the spec**, with § section numbers) |
 | **Stack** | Payload CMS 3.85.2 · Next.js 16.2.6 · React 19.2.6 · PostgreSQL 17 · TypeScript 5.7.3 |
 | **Repo** | https://github.com/sonamsrivastava458/odh-foundation-web |
-| **Status** | Backend ~35% complete. Content layer done; donations, forms, search, i18n, deployment remaining. |
-| **Last updated** | 12 July 2026 |
+| **Status** | Backend ~35% complete overall — unchanged from the last estimate because Donations (the single largest workstream, 3 of 7 weeks) is still untouched. But the content/CMS layer itself is now essentially done: **19 of 20 spec blocks built** (only `DonateWidget` deferred), verified page-by-page against the live frontend. See [§18](#18-current-progress). |
+| **Last updated** | 13 July 2026 |
 
 ---
 
@@ -106,7 +106,7 @@ types are all one definition.** Change a field in `src/collections/Projects.ts` 
                                        │
                           ┌────────────▼────────────┐
                           │  PostgreSQL 17          │
-                          │  91 tables              │
+                          │  127 tables             │
                           └─────────────────────────┘
 
    Uploads → local disk (⚠️ see §13.5 — must move to Cloudflare R2 before deploy)
@@ -295,11 +295,16 @@ odh-foundation-web/
     │   ├── MediaPosts.ts     #   news | press | blog | gallery | video
     │   └── Careers.ts
     │
-    ├── blocks/               # 11 page-builder blocks. One file each.
+    ├── blocks/               # 21 page-builder blocks. One file each.
     │   ├── Hero.ts  StatsBar.ts  AboutStrip.ts  HowYouCanHelp.ts
     │   ├── CategoryGrid.ts  FeaturedProjects.ts  FeaturedCampaigns.ts
     │   ├── TestimonialCarousel.ts  MediaGrid.ts
-    │   └── TrustStrip.ts  CTABand.ts
+    │   ├── TrustStrip.ts  CTABand.ts
+    │   ├── PageHeader.ts  RichText.ts  TeamGrid.ts  Timeline.ts
+    │   ├── FAQAccordion.ts  FormBlock.ts  ImageGallery.ts  VideoEmbed.ts
+    │   └── MapContact.ts  FeatureCards.ts   # ← FeatureCards is NOT in spec §6.2's
+    │                                        #   named list; added after building the
+    │                                        #   CSR page revealed a real gap. See §11.5.
     │
     ├── globals/              # 3 singletons
     │   ├── SiteSettings.ts   #   logo, contact, registrations, social, announcement, GA4
@@ -343,7 +348,7 @@ payload.config.ts
 
 collections/Pages.ts
       │  imports
-      ├──► blocks/*            (the 11 section types)
+      ├──► blocks/*            (the 21 section types)
       └──► hooks/populateBlocks.ts  (fills block.items on read)
 ```
 
@@ -964,12 +969,24 @@ export const populateBlocks: CollectionAfterReadHook = async ({ doc, req }) => {
                           limit: clampLimit(block.limit), sort: '-createdAt' })
         break
       // … featuredCampaigns, testimonialCarousel, mediaGrid, categoryGrid
+
+      case 'teamGrid':
+        // No auto/manual toggle — unlike featuredProjects, a team page always shows
+        // everyone, ordered by `order`. Founder-larger is a frontend display concern.
+        block.items = await query({ req, collection: 'team-members', limit: 50, sort: 'order' })
+        break
     }
   }))
 
   return doc
 }
 ```
+
+**`team-members` was added to the hook's `ResolvableCollection` union type** when `TeamGrid` was
+built — the switch and the type are extended together, or TypeScript will not let `'team-members'`
+compile as a valid `collection` argument. This was verified against a live document: `GET
+/api/pages/2?depth=2` returned `teamGrid.items` already populated with the one seeded team member,
+confirming the hook resolves correctly end-to-end (see [§18](#18-current-progress)).
 
 **Four things this gets right, each deliberately:**
 
@@ -1134,7 +1151,8 @@ We learned this the hard way: the width check originally used `Error` and editor
 
 # 9. Collections
 
-12 collections. Postgres tables: **91** (each array and each `hasMany` field becomes its own table).
+12 collections. Postgres tables: **127** (each array and each `hasMany` field becomes its own table —
+this rose from 91 as the block library grew; see [§14.3](#143-what-hasmany-and-array-do-to-postgres)).
 
 ## 9.1 `users`
 
@@ -1545,7 +1563,41 @@ The `mode`/`limit`/`projects` fields are editor plumbing. **The frontend should 
 | **AboutStrip** | `aboutStrip` | `eyebrow`, `title`, `paragraphs[]` (1–4), `image`, `link{label,href}` |
 | **HowYouCanHelp** | `howYouCanHelp` | `heading`, `options[]` (1–3): `title`, `description`, `ctaLabel`, `ctaHref`, `icon` → graphics |
 | **TrustStrip** | `trustStrip` | `heading`, `badges[]` (≤6): `label`, `note`. `logos[]`: `name`, `logo` → graphics, `url` |
-| **CTABand** | `ctaBand` | `heading`, `subheading`, `ctaLabel`, `ctaHref`, `qrImage` → graphics |
+| **CTABand** | `ctaBand` | `eyebrow`, `heading`, `subheading`, `ctaLabel`, `ctaHref`, `secondaryCta{label,href}`, `trustBadges[]` (≤4, `text`), `qrImage` → graphics |
+| **PageHeader** | `pageHeader` | `title`, `subtitle`, `crumbs[]` (`label`, `href`), `image` → media (optional — falls back to the brand gradient) |
+| **RichText** | `richText` | `eyebrow`, `heading`, `content` (richText) |
+| **Timeline** | `timeline` | `heading`, `milestones[]`: `year`, `title`, `description` |
+| **FAQAccordion** | `faqAccordion` | `heading`, `faqs[]`: `question`, `answer`. (Distinct from `campaigns.faqs` — that field feeds the campaign's own `FAQPage` schema; this block is for generic pages) |
+| **FormBlock** | `formBlock` | `heading`, `subheading`, `formType` (`contact`\|`volunteer`\|`csr`\|`career`\|`newsletter` — matches the not-yet-built `form-submissions.formType`), `fields[]` (`name`, `label`, `type`, `required`, `placeholder`, `options[]`), `submitLabel` |
+| **ImageGallery** | `imageGallery` | `heading`, `images[]`: `image` → media, `caption` |
+| **VideoEmbed** | `videoEmbed` | `heading`, `videoUrl`, `caption` |
+| **MapContact** | `mapContact` | `mapImage` → media only. Address/phone/email/hours/map link are **not** duplicated here — they come from `site-settings.contact` |
+| **FeatureCards** | `featureCards` | `eyebrow`, `heading`, `subheading`, `cards[]` (≤6): `icon` → graphics (optional), `title`, `description`. `downloadCta{label, file → documents}` (optional) |
+
+**`CTABand` was extended, not replaced.** It shipped with 5 fields (`heading`, `subheading`,
+`ctaLabel`, `ctaHref`, `qrImage`). Verifying it against the live About/CSR/Media pages showed the
+frontend also renders an eyebrow pill, a second button, and a small trust-badge line — none of
+which existed in the schema. Three fields (`eyebrow`, `secondaryCta`, `trustBadges`) were added,
+**all optional**, so every `ctaBand` block already saved in the database stayed valid with no
+migration. See [§22.10](#2210-additive-schema-changes-are-free-if-the-new-fields-are-optional).
+
+**`FeatureCards` is not one of the spec's 20 named blocks.** It was added after building the CSR
+page revealed a real gap: the "Why partner with us" / "Two ways to partner" sections are icon+title
++description cards **without** a mandatory per-card CTA, which is what `HowYouCanHelp` requires.
+Rather than force-fit `HowYouCanHelp` (whose `ctaLabel`/`ctaHref`/`icon` are all `required`),
+a second, more permissive card-grid block was added. It is already reused twice on one page (CSR)
+with different content — the definition of a correctly generalised block. See [§11.5](#115-block-coverage-against-spec-6.2).
+
+**`FormBlock.formType`** is designed to match the **not-yet-built** `form-submissions.formType`
+field from spec §6.1 exactly (`contact`\|`volunteer`\|`csr`\|`career`\|`newsletter`). When that
+collection is built (Phase 2, [§19.3](#193-missing-features-by-spec-section)), submissions from
+every `FormBlock` instance on the site will slot into it with no schema change on either side.
+
+**`MapContact` deliberately has one field.** Address, phone, email, hours and the Google Maps link
+all already exist on `site-settings.contact` (§10.2). Giving the block its own copies of those
+fields would duplicate content an editor could then update in one place and forget the other —
+exactly the mistake reference blocks exist to avoid ([§11.2](#112-the-two-kinds-of-block)). The
+frontend combines `mapContact.mapImage` with the `site-settings` global at render time.
 
 **`Hero.slides` is capped at `maxRows: 3`** — spec §5.1 says *"Rotating (max 3)"*. Payload will refuse
 a fourth. The spec's rule is enforced in code, not in a comment.
@@ -1565,6 +1617,7 @@ That needs a real number. Formatting — commas, the `+` suffix — is the front
 | **FeaturedCampaigns** | `featuredCampaigns` | Campaigns where `featured: true` **and** `active: true` |
 | **TestimonialCarousel** | `testimonialCarousel` | Latest testimonials |
 | **MediaGrid** | `mediaGrid` | Media posts, newest first. `filterByType[]` can narrow to specific types |
+| **TeamGrid** | `teamGrid` | All team members, sorted by `order` — no auto/manual toggle, unlike the blocks above. A team page shows everyone; "founder appears larger" is a frontend display rule driven by `isFounder`, not a curation choice an editor makes per-page |
 
 ## 11.4 `condition(_, siblingData)` — the gotcha
 
@@ -1583,21 +1636,72 @@ condition: (_, siblingData) => siblingData?.mode === 'auto'   // ✅ this block'
 **Inside blocks and arrays, always use `siblingData`.** `data` only makes sense at the top level of a
 document (which is why `MediaPosts` correctly uses `data.type`).
 
-## 11.5 Blocks the spec requires that do NOT exist yet
+## 11.5 Block coverage against spec §6.2
 
-Spec §6.2 lists **20** blocks. We have **11**. Missing:
+Spec §6.2 lists **20** named blocks. **19 of 20 exist.** Only one is intentionally still missing:
 
 ```
-PageHeader · RichText · TeamGrid · Timeline · ImageGallery
-VideoEmbed · FAQAccordion · DonateWidget · FormBlock · MapContact
+DonateWidget   ← deferred to Phase 3 (Donations). Not a content block — it is a live payment
+                 form wired to the `donations`/`subscriptions` collections and the PayU API,
+                 none of which exist yet. Building it now would mean building it twice.
 ```
 
-**This is a real gap, not a nice-to-have.** The About page needs `TeamGrid` and `Timeline`. Contact
-needs `MapContact` and `FormBlock`. Donate needs `DonateWidget`. The live odhfoundation.org homepage
-also has a **photo gallery** section (needs `ImageGallery`) and a **"Why ODH Foundation"** four-column
-section (needs a feature grid).
+Plus **one block beyond the spec's named list** — `FeatureCards` (see [§11.3](#113-every-block)) —
+added because the actual CSR page needed a card-grid shape the spec's other blocks did not cover.
 
-Until these exist, spec §6.2's rule is **violated** — those pages cannot be built without a developer.
+This was verified page-by-page, not assumed complete: `About`, `CSR`, `Media`, and `Volunteer` were
+each built end-to-end in the admin panel using only these blocks, and the resulting `/api/pages/:id`
+response was checked field-by-field against what the corresponding frontend route actually renders.
+Three real mistakes surfaced this way and were fixed before being treated as done:
+
+1. A `CSR` inquiry form field (`contactPerson`) was typed `email` instead of `text` — the person's
+   *name*, not their email address, would have hit an HTML5 email-format validator.
+2. The same page's field `name` was entered as `"company name"` (with a space) — this becomes an
+   object key once form submissions are wired up in Phase 2, and a space there breaks it silently.
+3. A required select field (*"Preferred focus area"*) was missing from the form entirely — the
+   frontend has 7 fields, the admin content only had 6.
+
+None of these were schema bugs — the block definitions were correct. They were **content-entry
+mistakes**, caught only by reading the raw API response next to the rendered page. **Verify against
+the API, not against how the admin form looks** — the form does not show you what actually got saved.
+
+**Until `DonateWidget` exists, the Donate page cannot be built from blocks** — everything else spec
+§6.2 requires now can be.
+
+## 11.6 Generic pages vs. collection-driven listings — a rule that is easy to get backwards
+
+Building the `Media` page in admin produced a real mistake worth documenting, because the instinct
+it corrects is a natural one.
+
+**What happened:** a `pages` document (slug `media`) was created with a `PageHeader` block — correct
+— followed by an `ImageGallery` block into which someone tried to manually type each news/blog/press
+item (title, a "description", a date, a type badge). `ImageGallery` has no such fields, because that
+is not its job, and the attempt stalled.
+
+**The rule this reveals:**
+
+| | Generic `pages` documents | A dedicated collection (`media-posts`, `projects`, `campaigns`, `careers`) |
+|---|---|---|
+| Holds | Page **chrome** — header, static sections, closing CTA | The actual **list items** — each with its own detail page |
+| Structure per item | Whatever the editor composes, any order | Fixed schema, identical shape for every item (required for SEO structured data and template consistency — see [§11.2](#112-the-two-kinds-of-block)) |
+| Example | `About`, `CSR`, `Volunteer`, `Contact`, legal pages | Every news post, every project, every campaign |
+
+**The correct shape for `/media`, `/projects`, `/campaigns`** is therefore *two* independent reads,
+not one:
+
+```
+1. Pages collection, slug "media"  → PageHeader + (optional) CTABand   — the chrome only
+2. media-posts collection, queried directly, with its own type/date filters → the card grid
+```
+
+The `pages` document for a listing route **never** contains the list items as blocks. Each item is
+its own document in its own collection, exactly as [§11.2](#112-the-two-kinds-of-block) already
+argues for reference blocks — this is the same principle one level up: don't let a generic,
+freely-reordered container hold data that needs a fixed, queryable, individually-routable shape.
+
+**Practical check before building any new generic page:** if the page's content is "a list of things
+that each need their own URL, own date, own type" — it is a collection, not a block. If it is "static
+prose/cards that only exist on this one page" — it is a block.
 
 ---
 
@@ -1831,7 +1935,7 @@ projects_impact_stats
   suffix     varchar
 ```
 
-This is why the project has **91 tables** for 12 collections. It is also why adding an array field
+This is why the project has **127 tables** for 12 collections. It is also why adding an array field
 requires a **dev-server restart** — Payload creates tables at boot, not on hot-reload.
 
 ---
@@ -2095,18 +2199,25 @@ Weighted against the spec's own workstream estimates (§12), for **backend scope
 | Workstream | Spec estimate | Done | Notes |
 |---|---|---|---|
 | **A — Foundation** | 0.5 wk | 🟡 **40%** | DB ✅, env ✅, git ✅. **R2 storage ❌**, CI ❌ |
-| **C — CMS models** | 2 wk | 🟢 **80%** | 12 collections ✅, 3 globals ✅, 11/20 blocks 🟡, revalidation ❌, i18n ❌ |
+| **C — CMS models** | 2 wk | 🟢 **95%** | 12 collections ✅, 3 globals ✅, **19/20 blocks ✅** (only `DonateWidget` deferred), revalidation ❌, i18n ❌ |
 | **E — Engagement** | ~1 wk (backend) | 🔴 **0%** | Forms, emails, search |
 | **F — Donations** | **3 wk** | 🔴 **0%** | The largest single piece |
 | **G — Hardening** | ~0.5 wk (backend) | 🔴 **10%** | SEO *fields* exist; sitemap/JSON-LD/headers/redirects do not |
 
-**Backend total: roughly 7 weeks of work. About 2 weeks done — call it 30–35%.**
+**Backend total: roughly 7 weeks of work. About 2.15 weeks done — still call it 30–35%.**
+
+**Read this the right way:** the CMS-modelling workstream (C) is nearly finished — completing it
+moved the needle only slightly overall because it is not the biggest workstream. **Donations (F) is
+3 of the remaining 7 weeks, untouched, and is what the overall percentage is actually waiting on.**
+Reporting "block library complete" and "overall % roughly flat" are both true at once, and a manager
+should hear both: real, verifiable progress on content tooling, with the honest reminder that the
+largest and riskiest piece of work has not started.
 
 By area:
 
 | Area | % |
 |---|---|
-| CMS content models | 80% |
+| CMS content models | 95% (19/20 spec blocks; only `DonateWidget` remains, by design) |
 | Admin panel | 90% (generated; only role UX polish left) |
 | Authentication & roles | 95% |
 | REST API (content) | 100% (generated) |
@@ -2182,13 +2293,15 @@ By area:
 - [ ] `GET /api/search?q=` — ranked, with type badges and highlighted snippets
 - [ ] Results page is `noindex`
 
-### The 9 missing blocks (spec §6.2)
+### The block library (spec §6.2) — ✅ done, except one
 
 `PageHeader` · `RichText` · `TeamGrid` · `Timeline` · `ImageGallery` · `VideoEmbed` · `FAQAccordion` ·
-`DonateWidget` · `FormBlock` · `MapContact`
+`FormBlock` · `MapContact` — all built, registered in `Pages.ts`, and verified against live content on
+the About, CSR, Media and Volunteer pages (see [§11.5](#115-block-coverage-against-spec-6.2)).
 
-Without these, About / CSR / Contact / Donate **cannot be built without a developer** — which violates
-spec §6.2 directly.
+**Only `DonateWidget` remains**, deliberately deferred — it depends on the `donations`/`subscriptions`
+collections and the PayU API (Phase 3), so building it now would mean building it twice. Until then,
+the Donate page is the one page in the spec that cannot yet be composed from blocks.
 
 ### SEO output (spec §8)
 
@@ -2232,12 +2345,12 @@ The point of this phase is that **nothing else is safe to build on a foundation 
 
 ## Phase 2 — Complete the CMS (1 week)
 
-| Task |
-|---|
-| The 9 missing blocks (§6.2) — `TeamGrid`, `Timeline`, `ImageGallery`, `FAQAccordion`, `MapContact`, `FormBlock`, `RichText`, `PageHeader`, `VideoEmbed`, `DonateWidget` |
-| `form-submissions` collection + `/api/forms/submit` + email |
-| `redirects` collection |
-| Migrate Navigation to `clearHiddenFields`; delete `clearHiddenNavFields` |
+| Task | Status |
+|---|---|
+| ~~The 9 missing blocks (§6.2)~~ — `TeamGrid`, `Timeline`, `ImageGallery`, `FAQAccordion`, `MapContact`, `FormBlock`, `RichText`, `PageHeader`, `VideoEmbed` | ✅ **Done** — plus `FeatureCards` (beyond spec). `DonateWidget` intentionally left for Phase 3. |
+| `form-submissions` collection + `/api/forms/submit` + email | ⬜ Not started — `FormBlock.formType` is already shaped to match it |
+| `redirects` collection | ⬜ Not started |
+| Migrate Navigation to `clearHiddenFields`; delete `clearHiddenNavFields` | ⬜ Not started |
 
 ## Phase 3 — Donations (3 weeks) ★
 
@@ -2300,7 +2413,7 @@ payload.config.ts   ← everything is registered here, wrapped in sanitizePlainT
        │
        ├── collections/   things that exist many times   (12)
        ├── globals/       things that exist once          (3)
-       ├── blocks/        page sections                  (11 of 20 required)
+       ├── blocks/        page sections                  (19 of 20 required, +1 beyond spec)
        ├── access/        who can do what                 (1 file, used everywhere)
        ├── fields/        reusable field definitions
        └── hooks/         reusable behaviour
@@ -2376,8 +2489,8 @@ Read, in order:
 ## 21.7 Current state, honestly
 
 - ✅ Content layer is solid and verified
+- ✅ **19 of 20 required blocks** exist (only `DonateWidget` deferred, on purpose — see §11.5)
 - ⚠️ Uploads go to **local disk** — will break on Vercel
-- ⚠️ **11 of 20 required blocks** exist
 - ❌ Donations: nothing
 - ❌ Revalidation: nothing — published content will not reach a static site
 - ❌ Hindi: nothing
@@ -2461,6 +2574,36 @@ different experience.
   sanitisation, so an address can keep a stray leading space.
 - **Extract the block-resolution rules from the `switch` in `populateBlocks`** into a declarative map,
   so adding a reference block is a data change rather than a code change.
+
+## 22.10 Additive schema changes are free if the new fields are optional
+
+`CTABand` shipped with 5 fields. Verifying it against the live frontend showed it needed 3 more
+(`eyebrow`, `secondaryCta`, `trustBadges`) to match what About/CSR/Media pages actually render. The
+fix was to add all three as **optional** fields to the existing block — not to version the block, not
+to migrate existing `ctaBand` documents, not to touch the Home page's already-saved instance.
+
+Every `ctaBand` block saved before the change stayed valid: Payload does not require a document to
+populate a field that was added after it was created. The Home page's CTA band kept rendering exactly
+as before, with the new fields simply absent.
+
+> **A block/collection schema can always grow.** The only changes that require migration work are
+> narrowing one (making an optional field required, removing a field with live data, renaming a field
+> — see [§22.6](#226-version-history-tables-will-surprise-you)). Adding an optional field is not an
+> architectural event; it does not need a plan, a flag, or a conversation about "breaking changes."
+
+## 22.11 A generic page-builder and a collection-driven listing look identical in the admin — until you try to fill one in wrong
+
+Building the `Media` page surfaced this directly: the instinct to put a `PageHeader` on it was
+correct; the instinct to also put the news items in an `ImageGallery` block was not, and the mistake
+was only visible once the block's fields (heading + images + caption) plainly could not express a
+type badge, a date, or a description. See [§11.6](#116-generic-pages-vs-collection-driven-listings--a-rule-that-is-easy-to-get-backwards)
+for the full rule.
+
+> **A freely-reordered container (a `pages` block layout) and a fixed-shape repeatable item (a
+> collection document) are not two flavours of the same thing.** The tell is whether each "item"
+> needs its own URL, its own date, its own filterable type. If it does, it is a collection. Building
+> it as a block first, then discovering the fields don't fit, is a slower way to arrive at the same
+> answer — the check in §11.6 is meant to be run *before* building, not after.
 
 ---
 

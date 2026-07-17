@@ -49,3 +49,30 @@ export const validatePhone: Validate = (value) => {
   }
   return true
 }
+
+/**
+ * A safe object key — used for FormBlock.fields[].name, which becomes a JS/JSON
+ * key once form submissions are wired up. No spaces, no punctuation — a space
+ * here (e.g. "company name") silently breaks that key later. This exists
+ * because that exact mistake already happened once on the CSR page.
+ */
+export const validateFieldKey: Validate = (value) => {
+  if (value === null || value === undefined || value === '') return true
+  if (typeof value !== 'string') return 'Enter a valid field key.'
+
+  if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(value)) {
+    return 'Use one camelCase word, no spaces or punctuation — for example "companyName".'
+  }
+  return true
+}
+
+/** A safe select-option value — lowercase slug, e.g. "under-5-lakh" */
+export const validateSlugValue: Validate = (value) => {
+  if (value === null || value === undefined || value === '') return true
+  if (typeof value !== 'string') return 'Enter a valid value.'
+
+  if (!/^[a-z0-9-]+$/.test(value)) {
+    return 'Use lowercase letters, numbers and hyphens only — for example "under-5-lakh".'
+  }
+  return true
+}

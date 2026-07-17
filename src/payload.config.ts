@@ -17,6 +17,11 @@ import { Testimonials } from './collections/Testimonials'
 import { Campaigns } from './collections/Campaigns'
 import { MediaPosts } from './collections/MediaPosts'
 import { Careers } from './collections/Careers'
+import { Donations } from './collections/Donations'
+import { Subscriptions } from './collections/Subscriptions'
+import { FormSubmissions } from './collections/FormSubmissions'
+
+
 
 import { SiteSettings } from './globals/SiteSettings'
 import { Navigation } from './globals/Navigation'
@@ -52,6 +57,9 @@ export default buildConfig(
       Campaigns,
       MediaPosts,
       Careers,
+      Donations,
+      Subscriptions,
+      FormSubmissions,
     ],
     globals: [SiteSettings, Navigation, DonationSettings],
     editor: lexicalEditor(),
@@ -73,6 +81,18 @@ export default buildConfig(
       responseOnLimit: 'File is too large. The maximum upload size is 10 MB.',
     },
     sharp,
+    // Donations.afterChange (generateReceipt hook) ka atomic receipt-number counter —
+    // yeh ek plain SQL table hai, Payload collection nahi (koi admin-panel UI nahi
+    // chahiye isko). IF NOT EXISTS se idempotent hai — har boot pe safe hai, chahe
+    // local dev ho ya production ka pehla deploy.
+    onInit: async (payload) => {
+      await payload.db.pool.query(`
+        CREATE TABLE IF NOT EXISTS receipt_counters (
+          fiscal_year text PRIMARY KEY,
+          last_number integer NOT NULL DEFAULT 0
+        )
+      `)
+    },
     plugins: [],
   }),
 )

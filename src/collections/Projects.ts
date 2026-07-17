@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isEditor, readPublished } from '../access'
+import { isEditor, isFinanceField, readPublished } from '../access'
 import { slugField } from '../fields/slug'
 import { seoField } from '../fields/seo'
 
@@ -80,6 +80,21 @@ export const Projects: CollectionConfig = {
         { name: 'suffix', type: 'text' },
       ],
     },
+        {
+      name: 'raisedAmount',
+      type: 'number',
+      label: 'Amount Raised (₹)',
+      min: 0,
+      defaultValue: 0,
+      access: {
+        // Campaigns.ts jaisa hi pattern — webhook update karta hai, editor nahi.
+        update: isFinanceField,
+      },
+      admin: {
+        description: 'Updated automatically as donations are received. Only finance can override it.',
+      },
+    },
+
     {
       name: 'beneficiaries',
       type: 'number',

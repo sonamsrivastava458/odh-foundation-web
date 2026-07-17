@@ -79,6 +79,9 @@ export interface Config {
     campaigns: Campaign;
     'media-posts': MediaPost;
     careers: Career;
+    donations: Donation;
+    subscriptions: Subscription;
+    'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +101,9 @@ export interface Config {
     campaigns: CampaignsSelect<false> | CampaignsSelect<true>;
     'media-posts': MediaPostsSelect<false> | MediaPostsSelect<true>;
     careers: CareersSelect<false> | CareersSelect<true>;
+    donations: DonationsSelect<false> | DonationsSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
+    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -314,6 +320,24 @@ export interface Page {
             blockType: 'hero';
           }
         | {
+            title: string;
+            subtitle?: string | null;
+            crumbs?:
+              | {
+                  label: string;
+                  href?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            /**
+             * Optional background photo — falls back to the brand gradient if empty.
+             */
+            image?: (number | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'pageHeader';
+          }
+        | {
             stats: {
               label: string;
               value: number;
@@ -436,10 +460,24 @@ export interface Page {
             blockType: 'trustStrip';
           }
         | {
+            eyebrow?: string | null;
             heading: string;
             subheading?: string | null;
             ctaLabel: string;
             ctaHref: string;
+            /**
+             * Optional second button, e.g. "Volunteer With Us". Leave label blank to hide.
+             */
+            secondaryCta?: {
+              label?: string | null;
+              href?: string | null;
+            };
+            trustBadges?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
             /**
              * UPI QR code for donors who prefer to pay directly.
              */
@@ -447,6 +485,162 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'ctaBand';
+          }
+        | {
+            eyebrow?: string | null;
+            heading?: string | null;
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'richText';
+          }
+        | {
+            heading?: string | null;
+            subheading?: string | null;
+            items?: (number | TeamMember)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'teamGrid';
+          }
+        | {
+            heading?: string | null;
+            milestones: {
+              year: string;
+              title: string;
+              description?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'timeline';
+          }
+        | {
+            heading?: string | null;
+            faqs: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faqAccordion';
+          }
+        | {
+            heading?: string | null;
+            subheading?: string | null;
+            /**
+             * Tags the submission so it lands in the right place in Form Submissions and notifies the right staff address.
+             */
+            formType: 'contact' | 'volunteer' | 'csr' | 'career' | 'newsletter';
+            fields: {
+              /**
+               * Key sent in the submission payload, e.g. "email". No spaces.
+               */
+              name: string;
+              label: string;
+              type: 'text' | 'email' | 'tel' | 'textarea' | 'select';
+              required?: boolean | null;
+              placeholder?: string | null;
+              /**
+               * Small note shown below the field, e.g. "We never share this."
+               */
+              helpText?: string | null;
+              /**
+               * Pre-fills the field. For a select field, must match one option's Value exactly.
+               */
+              defaultValue?: string | null;
+              width?: ('full' | 'half') | null;
+              /**
+               * How tall the textarea renders.
+               */
+              rows?: number | null;
+              minLength?: number | null;
+              maxLength?: number | null;
+              /**
+               * Only used when type = select.
+               */
+              options?:
+                | {
+                    label: string;
+                    /**
+                     * Stable machine value, e.g. "donation". Editing the Label later is safe — editing this breaks anything already stored against it.
+                     */
+                    value: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[];
+            submitLabel?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'formBlock';
+          }
+        | {
+            heading?: string | null;
+            images: {
+              image: number | Media;
+              caption?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageGallery';
+          }
+        | {
+            heading?: string | null;
+            /**
+             * YouTube URL — loaded lazily on click (lite-youtube-embed), never an eager iframe (spec §9).
+             */
+            videoUrl: string;
+            caption?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'videoEmbed';
+          }
+        | {
+            /**
+             * Static map screenshot, links out to Google Maps. Office address/phone/email/hours come from Site Settings → Contact — not repeated here. Never embed a live Maps iframe (spec §5.10).
+             */
+            mapImage: number | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'mapContact';
+          }
+        | {
+            eyebrow?: string | null;
+            heading: string;
+            subheading?: string | null;
+            cards: {
+              icon?: (number | null) | Graphic;
+              title: string;
+              description: string;
+              id?: string | null;
+            }[];
+            /**
+             * Used for things like "CSR deck (PDF)" below the cards. Leave blank to hide.
+             */
+            downloadCta?: {
+              label?: string | null;
+              file?: (number | null) | Document;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'featureCards';
           }
       )[]
     | null;
@@ -664,6 +858,10 @@ export interface Project {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Updated automatically as donations are received. Only finance can override it.
+   */
+  raisedAmount?: number | null;
   beneficiaries?: number | null;
   gallery?:
     | {
@@ -872,6 +1070,119 @@ export interface Career {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Written by the donation API. Manual entries here are only for reconciling an offline UPI or bank transfer.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations".
+ */
+export interface Donation {
+  id: number;
+  donorName: string;
+  email: string;
+  phone: string;
+  /**
+   * Optional — required only if the donor wants an 80G receipt.
+   */
+  pan?: string | null;
+  address?: string | null;
+  /**
+   * In rupees. This min is a UI guard only — the donate API independently rejects anything below ₹100 server-side (spec §7).
+   */
+  amount: number;
+  currency: 'INR';
+  frequency: 'one-time' | 'monthly';
+  /**
+   * Set when a monthly mandate is created. Links to the matching row in Subscriptions.
+   */
+  subscriptionId?: string | null;
+  campaign?: (number | null) | Campaign;
+  project?: (number | null) | Project;
+  gateway: 'payu' | 'razorpay' | 'upi-manual';
+  /**
+   * Used by the webhook to detect and ignore duplicate retries (spec §7 idempotency rule). Blank until the gateway assigns one.
+   */
+  gatewayTxnId?: string | null;
+  /**
+   * Raw status string as returned by the gateway — for support/debugging, never shown to donors.
+   */
+  gatewayStatus?: string | null;
+  /**
+   * The only status the rest of the system trusts. Set by the verified webhook — never by the redirect URL (spec §7).
+   */
+  internalStatus: 'initiated' | 'success' | 'failed' | 'refunded' | 'cancelled';
+  /**
+   * Auto-generated (e.g. ODH/2026-27/0001) once Internal Status becomes Success.
+   */
+  receiptNumber?: string | null;
+  /**
+   * Set automatically once the receipt PDF is generated.
+   */
+  receiptPdfUrl?: string | null;
+  consent: {
+    termsAccepted: boolean;
+    contactPermission?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * One row per active monthly donor mandate. Created by the donation webhook when a recurring mandate is confirmed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: number;
+  donorName: string;
+  email: string;
+  phone: string;
+  pan?: string | null;
+  amount: number;
+  gatewaySubscriptionId: string;
+  /**
+   * Safe to name "status" here — this collection has no versions/drafts, so there is no _status field to collide with.
+   */
+  status: 'active' | 'paused' | 'cancelled' | 'failed';
+  startDate: string;
+  nextChargeDate?: string | null;
+  /**
+   * Signed token used in the donor self-service cancel link emailed with every receipt.
+   */
+  cancelToken?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Written by the public /api/forms/submit API. Staff triage happens here — mark Read/Archived as you action each one.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions".
+ */
+export interface FormSubmission {
+  id: number;
+  formType: 'contact' | 'volunteer' | 'csr' | 'career' | 'newsletter';
+  page: number | Page;
+  /**
+   * Which Form block on the page this came from — matches its internal block ID.
+   */
+  blockId: string;
+  /**
+   * The submitted field values, keyed by each field's Name.
+   */
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  status: 'new' | 'read' | 'archived';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -942,6 +1253,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'careers';
         value: number | Career;
+      } | null)
+    | ({
+        relationTo: 'donations';
+        value: number | Donation;
+      } | null)
+    | ({
+        relationTo: 'subscriptions';
+        value: number | Subscription;
+      } | null)
+    | ({
+        relationTo: 'form-submissions';
+        value: number | FormSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1143,6 +1466,22 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        pageHeader?:
+          | T
+          | {
+              title?: T;
+              subtitle?: T;
+              crumbs?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                    id?: T;
+                  };
+              image?: T;
+              id?: T;
+              blockName?: T;
+            };
         statsBar?:
           | T
           | {
@@ -1282,11 +1621,157 @@ export interface PagesSelect<T extends boolean = true> {
         ctaBand?:
           | T
           | {
+              eyebrow?: T;
               heading?: T;
               subheading?: T;
               ctaLabel?: T;
               ctaHref?: T;
+              secondaryCta?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              trustBadges?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
               qrImage?: T;
+              id?: T;
+              blockName?: T;
+            };
+        richText?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        teamGrid?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              items?: T;
+              id?: T;
+              blockName?: T;
+            };
+        timeline?:
+          | T
+          | {
+              heading?: T;
+              milestones?:
+                | T
+                | {
+                    year?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        faqAccordion?:
+          | T
+          | {
+              heading?: T;
+              faqs?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        formBlock?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              formType?: T;
+              fields?:
+                | T
+                | {
+                    name?: T;
+                    label?: T;
+                    type?: T;
+                    required?: T;
+                    placeholder?: T;
+                    helpText?: T;
+                    defaultValue?: T;
+                    width?: T;
+                    rows?: T;
+                    minLength?: T;
+                    maxLength?: T;
+                    options?:
+                      | T
+                      | {
+                          label?: T;
+                          value?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              submitLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageGallery?:
+          | T
+          | {
+              heading?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        videoEmbed?:
+          | T
+          | {
+              heading?: T;
+              videoUrl?: T;
+              caption?: T;
+              id?: T;
+              blockName?: T;
+            };
+        mapContact?:
+          | T
+          | {
+              mapImage?: T;
+              id?: T;
+              blockName?: T;
+            };
+        featureCards?:
+          | T
+          | {
+              eyebrow?: T;
+              heading?: T;
+              subheading?: T;
+              cards?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              downloadCta?:
+                | T
+                | {
+                    label?: T;
+                    file?: T;
+                  };
               id?: T;
               blockName?: T;
             };
@@ -1355,6 +1840,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         suffix?: T;
         id?: T;
       };
+  raisedAmount?: T;
   beneficiaries?: T;
   gallery?:
     | T
@@ -1519,6 +2005,68 @@ export interface CareersSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donations_select".
+ */
+export interface DonationsSelect<T extends boolean = true> {
+  donorName?: T;
+  email?: T;
+  phone?: T;
+  pan?: T;
+  address?: T;
+  amount?: T;
+  currency?: T;
+  frequency?: T;
+  subscriptionId?: T;
+  campaign?: T;
+  project?: T;
+  gateway?: T;
+  gatewayTxnId?: T;
+  gatewayStatus?: T;
+  internalStatus?: T;
+  receiptNumber?: T;
+  receiptPdfUrl?: T;
+  consent?:
+    | T
+    | {
+        termsAccepted?: T;
+        contactPermission?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  donorName?: T;
+  email?: T;
+  phone?: T;
+  pan?: T;
+  amount?: T;
+  gatewaySubscriptionId?: T;
+  status?: T;
+  startDate?: T;
+  nextChargeDate?: T;
+  cancelToken?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions_select".
+ */
+export interface FormSubmissionsSelect<T extends boolean = true> {
+  formType?: T;
+  page?: T;
+  blockId?: T;
+  data?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

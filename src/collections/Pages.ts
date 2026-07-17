@@ -14,8 +14,22 @@ import { TestimonialCarousel } from '../blocks/TestimonialCarousel'
 import { MediaGrid } from '../blocks/MediaGrid'
 import { TrustStrip } from '../blocks/TrustStrip'
 import { CTABand } from '../blocks/CTABand'
+import { PageHeader } from '../blocks/PageHeader'
+import { RichText } from '../blocks/RichText'
+import { TeamGrid } from '../blocks/TeamGrid'
+import { Timeline } from '../blocks/Timeline'
+import { FAQAccordion } from '../blocks/FAQAccordion'
+import { FormBlock } from '../blocks/FormBlock'
+import { ImageGallery } from '../blocks/ImageGallery'
+import { VideoEmbed } from '../blocks/VideoEmbed'
+import { MapContact } from '../blocks/MapContact'
+import { FeatureCards } from '../blocks/FeatureCards'
+
+
 
 import { populateBlocks } from '../hooks/populateBlocks'
+
+
 
 export const Pages: CollectionConfig = {
   slug: 'pages',
@@ -43,19 +57,30 @@ export const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       minRows: 1,
-      blocks: [
-        Hero,
-        StatsBar,
-        AboutStrip,
-        CategoryGrid,
-        FeaturedCampaigns,
-        FeaturedProjects,
-        HowYouCanHelp,
-        TestimonialCarousel,
-        MediaGrid,
-        TrustStrip,
-        CTABand,
-      ],
+     blocks: [
+  Hero,
+  PageHeader,
+  StatsBar,
+  AboutStrip,
+  CategoryGrid,
+  FeaturedCampaigns,
+  FeaturedProjects,
+  HowYouCanHelp,
+  TestimonialCarousel,
+  MediaGrid,
+  TrustStrip,
+  CTABand,
+  RichText,
+  TeamGrid,
+  Timeline,
+  FAQAccordion,
+  FormBlock,
+  ImageGallery,
+  VideoEmbed,
+  MapContact,
+  FeatureCards,
+],
+
     },
     seoField(),
   ],

@@ -1,0 +1,178 @@
+{
+  "info": {
+    "name": "ODH Foundation Backend API",
+    "description": "All Payload-generated and custom API routes for the ODH Foundation backend. Every request here was hand-verified against the running dev server on 16 July 2026 (see API_DOCUMENTATION.md).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "txnid", "value": "", "type": "string", "description": "Filled in automatically after running 'Initiate Donation'" }
+  ],
+  "item": [
+    {
+      "name": "1. Content Collections (public)",
+      "item": [
+        { "name": "List Projects", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/projects?limit=5", "host": ["{{baseUrl}}"], "path": ["api", "projects"], "query": [{ "key": "limit", "value": "5" }] } } },
+        { "name": "List Project Categories", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/project-categories?sort=order", "host": ["{{baseUrl}}"], "path": ["api", "project-categories"], "query": [{ "key": "sort", "value": "order" }] } } },
+        { "name": "List Campaigns", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/campaigns?limit=5", "host": ["{{baseUrl}}"], "path": ["api", "campaigns"], "query": [{ "key": "limit", "value": "5" }] } } },
+        { "name": "List Media Posts", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/media-posts?limit=5", "host": ["{{baseUrl}}"], "path": ["api", "media-posts"], "query": [{ "key": "limit", "value": "5" }] } } },
+        { "name": "List Team Members", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/team-members", "host": ["{{baseUrl}}"], "path": ["api", "team-members"] } } },
+        { "name": "List Testimonials", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/testimonials", "host": ["{{baseUrl}}"], "path": ["api", "testimonials"] } } },
+        { "name": "List Careers", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/careers", "host": ["{{baseUrl}}"], "path": ["api", "careers"] } } },
+        { "name": "List Pages", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/pages", "host": ["{{baseUrl}}"], "path": ["api", "pages"] } } },
+        { "name": "List Media (Photos)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/media?limit=5", "host": ["{{baseUrl}}"], "path": ["api", "media"], "query": [{ "key": "limit", "value": "5" }] } } },
+        { "name": "List Graphics", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/graphics", "host": ["{{baseUrl}}"], "path": ["api", "graphics"] } } },
+        { "name": "List Documents", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/documents", "host": ["{{baseUrl}}"], "path": ["api", "documents"] } } }
+      ]
+    },
+    {
+      "name": "2. Restricted Collections (expect 403 unless logged in)",
+      "item": [
+        { "name": "List Users (expect 403)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] } } },
+        { "name": "List Donations (expect 403)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/donations", "host": ["{{baseUrl}}"], "path": ["api", "donations"] } } },
+        { "name": "List Subscriptions (expect 403)", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/subscriptions", "host": ["{{baseUrl}}"], "path": ["api", "subscriptions"] } } }
+      ]
+    },
+    {
+      "name": "3. Globals",
+      "item": [
+        { "name": "Site Settings", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/globals/site-settings", "host": ["{{baseUrl}}"], "path": ["api", "globals", "site-settings"] } } },
+        { "name": "Navigation", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/globals/navigation", "host": ["{{baseUrl}}"], "path": ["api", "globals", "navigation"] } } },
+        { "name": "Donation Settings", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/globals/donation-settings", "host": ["{{baseUrl}}"], "path": ["api", "globals", "donation-settings"] } } }
+      ]
+    },
+    {
+      "name": "4. Donation APIs (custom)",
+      "item": [
+        {
+          "name": "Initiate Donation (valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  pm.collectionVariables.set('txnid', body.txnid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donorName\": \"Postman Test Donor\",\n  \"email\": \"postman-test@example.com\",\n  \"phone\": \"9876543210\",\n  \"amount\": 500,\n  \"frequency\": \"one-time\",\n  \"consent\": { \"termsAccepted\": true }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/donate/initiate", "host": ["{{baseUrl}}"], "path": ["api", "donate", "initiate"] }
+          }
+        },
+        {
+          "name": "Initiate Donation (invalid — expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"amount\": 5\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/donate/initiate", "host": ["{{baseUrl}}"], "path": ["api", "donate", "initiate"] }
+          }
+        },
+        {
+          "name": "Donate Status (uses txnid from Initiate)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/donate/status?txnid={{txnid}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donate", "status"],
+              "query": [{ "key": "txnid", "value": "{{txnid}}" }]
+            }
+          }
+        },
+        {
+          "name": "Donate Status (missing txnid — expect 400)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/donate/status", "host": ["{{baseUrl}}"], "path": ["api", "donate", "status"] }
+          }
+        },
+        {
+          "name": "Webhook (fake hash — expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "txnid", "value": "{{txnid}}" },
+                { "key": "status", "value": "success" },
+                { "key": "amount", "value": "500.00" },
+                { "key": "productinfo", "value": "ODH Foundation Donation" },
+                { "key": "firstname", "value": "Postman" },
+                { "key": "email", "value": "postman-test@example.com" },
+                { "key": "hash", "value": "abc123-fake-hash" }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/api/donate/webhook", "host": ["{{baseUrl}}"], "path": ["api", "donate", "webhook"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Auth",
+      "item": [
+        {
+          "name": "Login (wrong credentials — expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nope@example.com\",\n  \"password\": \"wrong\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api", "users", "login"] }
+          }
+        },
+        {
+          "name": "Login (real admin credentials)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"REPLACE_WITH_ADMIN_EMAIL\",\n  \"password\": \"REPLACE_WITH_ADMIN_PASSWORD\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api", "users", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. GraphQL",
+      "item": [
+        {
+          "name": "GraphQL reachability check",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"{ __typename }\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": { "raw": "{{baseUrl}}/api/graphql", "host": ["{{baseUrl}}"], "path": ["api", "graphql"] }
+          }
+        }
+      ]
+    }
+  ]
+}
