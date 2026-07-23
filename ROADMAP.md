@@ -8,8 +8,8 @@
 | **Spec** | `ODH-Foundation-Website-Technical-Implementation-Document.md` (referred to below as **the spec**, with § section numbers) |
 | **Stack** | Payload CMS 3.85.2 · Next.js 16.2.6 · React 19.2.6 · PostgreSQL 17 · TypeScript 5.7.3 |
 | **Repo** | https://github.com/sonamsrivastava458/odh-foundation-web |
-| **Status** | Backend ~35% complete overall — unchanged from the last estimate because Donations (the single largest workstream, 3 of 7 weeks) is still untouched. But the content/CMS layer itself is now essentially done: **19 of 20 spec blocks built** (only `DonateWidget` deferred), verified page-by-page against the live frontend. See [§18](#18-current-progress). |
-| **Last updated** | 13 July 2026 |
+| **Status** | Backend ~75% complete overall. The one-time donation path, finance CSV export, search, and forms are done and verified end-to-end. A 2026-07-18 re-audit against this spec document surfaced two real gaps that weren't being tracked before: self-service cancellation only updates our own database, not the actual PayU mandate; and the webhook never maps a refund event to `internalStatus: refunded`. Neither blocks a one-time-donation demo, but both must be fixed (or the manual-cancel-in-PayU-dashboard workaround must be a documented process) before recurring donors go live. Also open: rate limiting on `/api/donate/*`/`/api/forms/*`, revalidation hooks, recurring/e-mandate. See [§18](#18-current-progress). |
+| **Last updated** | 18 July 2026 |
 
 ---
 
@@ -2200,18 +2200,33 @@ Weighted against the spec's own workstream estimates (§12), for **backend scope
 |---|---|---|---|
 | **A — Foundation** | 0.5 wk | 🟡 **40%** | DB ✅, env ✅, git ✅. **R2 storage ❌**, CI ❌ |
 | **C — CMS models** | 2 wk | 🟢 **95%** | 12 collections ✅, 3 globals ✅, **19/20 blocks ✅** (only `DonateWidget` deferred), revalidation ❌, i18n ❌ |
-| **E — Engagement** | ~1 wk (backend) | 🔴 **0%** | Forms, emails, search |
-| **F — Donations** | **3 wk** | 🔴 **0%** | The largest single piece |
-| **G — Hardening** | ~0.5 wk (backend) | 🔴 **10%** | SEO *fields* exist; sitemap/JSON-LD/headers/redirects do not |
+| **E — Engagement** | ~1 wk (backend) | 🟢 **90%** | Forms ✅, Search ✅ (`/api/search`, Postgres full-text with `ts_rank`/`ts_headline`); honeypot/rate-limit hardening still open |
+| **F — Donations** | **3 wk** | 🟡 **~75%** | One-time flow ✅, cancellation ✅ (with a real caveat — see below), finance CSV export ✅; recurring/e-mandate, failed-charge handling, and refund-webhook mapping ❌ |
+| **G — Hardening** | ~0.5 wk (backend) | 🟡 **25%** | SEO data endpoint ✅, security headers ✅, redirects collection ✅; **rate limiting on `/api/*` ❌**, honeypot/time-trap ❌, CSP intentionally deferred |
 
-**Backend total: roughly 7 weeks of work. About 2.15 weeks done — still call it 30–35%.**
+**Backend total: roughly 7 weeks of work. About 5.25 weeks done — call it 75%.**
 
-**Read this the right way:** the CMS-modelling workstream (C) is nearly finished — completing it
-moved the needle only slightly overall because it is not the biggest workstream. **Donations (F) is
-3 of the remaining 7 weeks, untouched, and is what the overall percentage is actually waiting on.**
-Reporting "block library complete" and "overall % roughly flat" are both true at once, and a manager
-should hear both: real, verifiable progress on content tooling, with the honest reminder that the
-largest and riskiest piece of work has not started.
+**2026-07-18 re-audit against the original spec document turned up gaps that weren't being tracked in
+this table before — not new work done, but real work newly *found*. Listed in full in §19.1 and
+§19.3a below. The two that matter most before any production traffic:**
+1. **Cancellation only updates our own `subscriptions.status`.** It does not call PayU to actually stop
+   the auto-debit (spec §7.1: "cancels mandate **via gateway API**"). Until PayU SI is integrated,
+   finance must also manually cancel the mandate in the PayU dashboard for every self-service
+   cancellation, or the donor will keep being charged.
+2. **The webhook never sets `internalStatus: refunded`.** Spec §7.1 expects refunds (processed in the
+   PayU dashboard) to flow back through the webhook and update the donation row. `updateRaisedAmount`
+   already handles a `refunded` transition correctly *if* it ever happens — but nothing currently makes
+   it happen.
+
+**Read this the right way:** the one-time donation path — the thing a live demo actually exercises
+(donate → webhook → receipt number → PDF → email → `raisedAmount` update) — works end-to-end and
+survived a real concurrency bug found and fixed during testing (a self-referencing update inside an
+`afterChange` hook that deadlocked Postgres — see [§22.12](#2212-never-self-update-a-document-from-its-own-afterchange-hook)).
+Cancellation and CSV export are also done now — both are fully within our own system (no external API),
+so both were built and verified to a genuine zero-error standard. What's **still not** done in
+Donations is recurring mandates (PayU Standing Instructions / e-mandate) and 3-strike failed-charge
+handling — both depend on PayU's Standing Instruction API contract, which cannot be verified without
+real PayU sandbox credentials. Deliberately held rather than shipped unverified.
 
 By area:
 
@@ -2223,11 +2238,17 @@ By area:
 | REST API (content) | 100% (generated) |
 | Upload pipeline | 85% (**local disk, not R2**) |
 | SEO — data model | 90% |
-| SEO — output (sitemap, JSON-LD, redirects) | 0% |
+| SEO — output (sitemap, JSON-LD, redirects) | 20% (backend data endpoint done; sitemap.ts/robots.ts/JSON-LD render in the frontend repo) |
 | Homepage data | 100% |
-| Donations | 0% |
-| Forms & search | 0% |
-| Emails & webhooks | 0% |
+| Donations — one-time flow | 100% |
+| Donations — cancellation | 60% (`POST /api/subscriptions/cancel` correctly updates our DB; does **not** call PayU to stop the actual mandate — see §18 note above) |
+| Donations — finance CSV export | 100% (`GET /api/donations/export`, role-gated via `req.user`) |
+| Donations — refund webhook mapping | 0% (webhook never sets `internalStatus: refunded`) |
+| Donations — recurring/e-mandate, failed-charge handling | 0% (blocked on real PayU credentials) |
+| Rate limiting (`/api/donate/*`, `/api/forms/*`) | 0% — spec §10 asks for 5/min/IP |
+| Forms & staff notification | 90% (honeypot/rate-limit still open) |
+| Search | 100% (`GET /api/search`, ranked + highlighted snippets, 4 collections) |
+| Emails & webhooks | 85% (code done; real Resend/PayU credentials pending) |
 | Hindi (i18n) | 0% |
 | Deployment | 0% |
 | Tests | 0% |
@@ -2243,7 +2264,8 @@ By area:
 | 1 | **Cloudflare R2 storage adapter** | Vercel's filesystem is ephemeral. Every uploaded image disappears on deploy. |
 | 2 | **Revalidation hooks + `/api/revalidate`** | Without it, published content never reaches a static site. |
 | 3 | **Neon in a Mumbai/Singapore region** | `us-east-1` was unusable from India. It will hurt production TTFB too. |
-| 4 | **Security headers in `next.config.ts`** | Currently the template default. Spec §10. |
+| 4 | ~~Security headers in `next.config.ts`~~ | ✅ Done — `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, HSTS, `Permissions-Policy`. CSP intentionally deferred (risk of breaking the Payload admin without testing against its real script requirements). |
+| 5 | **Rate limiting on `/api/donate/*` and `/api/forms/*`** | Spec §10 asks for 5/min/IP. Nothing stops a script from hammering either endpoint today — `/api/donate/initiate` creates a real `donations` row per call, `/api/forms/submit` triggers an email per call. |
 
 ## 19.2 Known bugs
 
@@ -2261,31 +2283,49 @@ By area:
 
 ### Donations (spec §7) — the biggest piece, 3 weeks
 
-- [ ] `donations` collection (admin-only): donor details, amount, `frequency`, `subscriptionId`,
+- [x] `donations` collection (admin-only): donor details, amount, `frequency`, `subscriptionId`,
       campaign/project link, gateway IDs, `internalStatus`, `receiptNumber`, `receiptPdfUrl`, consent
-- [ ] `subscriptions` collection: one row per active monthly donor, with a `cancelToken`
-- [ ] `POST /api/donate/initiate` — zod validation, create the row, **generate the PayU hash
+- [x] `subscriptions` collection: one row per active monthly donor, with a `cancelToken` (schema only —
+      nothing yet creates/manages a real mandate against it, see recurring item below)
+- [x] `POST /api/donate/initiate` — zod validation, create the row, **generate the PayU hash
       server-side (the salt must never reach the client)**
-- [ ] `POST /api/donate/webhook` — **verify the signature**, **be idempotent**, update status,
-      log failures to Sentry
-- [ ] `GET /api/donate/status` — for the success page to poll
+- [x] `POST /api/donate/webhook` — **verify the signature**, **be idempotent**, update status
+      (Sentry logging still open, see §19.1)
+- [ ] Webhook never maps a PayU refund event to `internalStatus: refunded` — spec §7.1 expects refunds
+      (actioned in the PayU dashboard) to flow back through the webhook. `updateRaisedAmount` already
+      handles the `refunded` transition correctly (decrements `raisedAmount`) *if* it's ever reached —
+      nothing currently reaches it. **Found 2026-07-18, re-auditing against the spec.**
+- [x] `GET /api/donate/status` — for the success page to poll
 - [ ] Recurring: PayU Standing Instructions / e-mandate (UPI Autopay + card SI). Razorpay
       Subscriptions as the documented fallback, behind one `PaymentGateway` interface.
-- [ ] Receipt: **atomic** receipt number (`ODH/2026-27/0001`), PDF via `@react-pdf/renderer`, upload,
-      email via Resend
-- [ ] `campaigns.raisedAmount` updated by the webhook (the field access is already in place)
-- [ ] Finance CSV export with a date-range filter
-- [ ] Self-service cancellation via a signed token link
-- [ ] Failed-charge handling: after 3 consecutive failures, mark `failed` and notify
+- [x] Receipt: **atomic** receipt number (`ODH/2026-27/0001`), PDF via `@react-pdf/renderer`, upload,
+      email via Resend (code complete; real Resend API key still pending)
+- [x] `campaigns`/`projects` `raisedAmount` updated on donation success (and reversed on refund, once the
+      item above is fixed)
+- [x] Finance CSV export with a date-range filter — `GET /api/donations/export?from=&to=`, role-gated
+      (`req.user.roles` includes `finance`/`super-admin`), populates campaign/project titles at `depth: 1`
+- [x] Self-service cancellation via a signed token link — `POST /api/subscriptions/cancel`;
+      `cancelToken` is now auto-generated (`crypto.randomBytes(24)`) in a `beforeChange` hook on create.
+      **Caveat found 2026-07-18:** this only updates our own `subscriptions.status`. It does not call
+      PayU to stop the actual auto-debit mandate (spec §7.1 says "cancels mandate **via gateway API**")
+      — that half depends on PayU SI access we don't have yet. Until then, finance must also cancel the
+      mandate manually in the PayU dashboard whenever a donor uses this link, or the donor keeps being
+      charged despite our system showing "cancelled."
+- [ ] Failed-charge handling: after 3 consecutive failures, mark `failed` and notify — blocked on the
+      recurring-charge flow existing first
 
 > **The rule that governs all of this (spec §7):**
 > **Payment truth comes only from the verified webhook. Never from the redirect URL.**
 
 ### Forms (spec §5.6, §5.8, §5.10)
 
-- [ ] `form-submissions` collection — `formType`, `payload` (JSON), `sourcePage`, `resumeFile`
-- [ ] `POST /api/forms/submit` — zod, honeypot, time-trap, rate limit
-- [ ] Email notification per form type
+- [x] `form-submissions` collection — `formType`, `data` (JSON), `page` + `blockId` (identifies which
+      Form block on which page), `status` (New/Read/Archived) for staff triage
+- [x] `POST /api/forms/submit` — validates the submission against the live `FormBlock` field
+      definitions on the referenced page (required/type/min-max/select-options), not just client-side
+- [x] Email notification (staff, via Resend) — one shared address (`SiteSettings.contact.email`) for
+      now, not yet per-form-type
+- [ ] Honeypot / time-trap / rate limit — spam hardening not yet added
 
 ### Search (spec §5.11)
 
@@ -2305,11 +2345,17 @@ the Donate page is the one page in the spec that cannot yet be composed from blo
 
 ### SEO output (spec §8)
 
-- [ ] `sitemap.ts`, `robots.ts`
-- [ ] JSON-LD: `NGO`, `WebSite`+`SearchAction`, `BreadcrumbList`, `Article`, `FAQPage`, `JobPosting`
+- [x] `GET /api/seo/sitemap-data` — aggregates slug + `updatedAt` + `seo.*` across `pages`, `projects`,
+      `campaigns`, `media-posts`, `careers` (excludes anything with `seo.noIndex`). This is the
+      backend's whole share of the work — see the note below.
+- [ ] `sitemap.ts`, `robots.ts` — **frontend-repo work**, not backend. These render at whichever domain
+      is actually live, and consume the endpoint above.
+- [ ] JSON-LD: `NGO`, `WebSite`+`SearchAction`, `BreadcrumbList`, `Article`, `FAQPage`, `JobPosting` —
+      also frontend-repo work; the underlying data (SiteSettings registrations, page `seo` fields) is
+      already 100% available over the REST API
 - [ ] `redirects` collection + old→new URL map (**crawl the old site first; skipping this loses all
       current rankings**)
-- [ ] `opengraph-image.tsx`
+- [ ] `opengraph-image.tsx` — frontend-repo work
 
 ### Hindi (spec §5.12)
 
@@ -2348,7 +2394,7 @@ The point of this phase is that **nothing else is safe to build on a foundation 
 | Task | Status |
 |---|---|
 | ~~The 9 missing blocks (§6.2)~~ — `TeamGrid`, `Timeline`, `ImageGallery`, `FAQAccordion`, `MapContact`, `FormBlock`, `RichText`, `PageHeader`, `VideoEmbed` | ✅ **Done** — plus `FeatureCards` (beyond spec). `DonateWidget` intentionally left for Phase 3. |
-| `form-submissions` collection + `/api/forms/submit` + email | ⬜ Not started — `FormBlock.formType` is already shaped to match it |
+| `form-submissions` collection + `/api/forms/submit` + email | ✅ **Done** — validates against the live `FormBlock` definition server-side; honeypot/rate-limit still open |
 | `redirects` collection | ⬜ Not started |
 | Migrate Navigation to `clearHiddenFields`; delete `clearHiddenNavFields` | ⬜ Not started |
 
@@ -2356,11 +2402,11 @@ The point of this phase is that **nothing else is safe to build on a foundation 
 
 The spec's own estimate. This is where the risk lives.
 
-| Week | Work |
-|---|---|
-| 1 | `donations` + `subscriptions` collections. `PaymentGateway` interface. `/api/donate/initiate` with server-side hashing. |
-| 2 | Webhook: signature verification, idempotency, status transitions. Receipt: atomic number, PDF, Resend email. `campaigns.raisedAmount` update. |
-| 3 | Recurring mandates. Self-service cancellation. Failed-charge handling. Finance CSV export. Full test-card matrix. |
+| Week | Work | Status |
+|---|---|---|
+| 1 | `donations` + `subscriptions` collections. `/api/donate/initiate` with server-side hashing. | ✅ **Done** (no separate `PaymentGateway` interface abstraction yet — only PayU is wired up) |
+| 2 | Webhook: signature verification, idempotency, status transitions. Receipt: atomic number, PDF, Resend email. `campaigns`/`projects` `raisedAmount` update. | ✅ **Done** |
+| 3 | Recurring mandates. ~~Self-service cancellation.~~ Failed-charge handling. ~~Finance CSV export.~~ Full test-card matrix. | 🟡 Cancellation ✅ and CSV export ✅ done; recurring mandates + failed-charge handling blocked on real PayU credentials |
 
 **Do not start this until the PayU merchant credentials exist** (spec Appendix C, item 2) and
 **e-mandate is confirmed enabled** on the account (item 6) — the recurring flow depends on it.
@@ -2604,6 +2650,33 @@ for the full rule.
 > needs its own URL, its own date, its own filterable type. If it does, it is a collection. Building
 > it as a block first, then discovering the fields don't fit, is a slower way to arrive at the same
 > answer — the check in §11.6 is meant to be run *before* building, not after.
+
+---
+
+## 22.12 Never self-update a document from its own `afterChange` hook
+
+`generateReceipt.ts` (the `donations.afterChange` hook that generates the PDF receipt) originally
+finished by calling `payload.update()` on the **same donation document** that was still mid-save —
+to write back `receiptNumber`/`receiptPdfUrl` once the PDF existed. Every single time a donation was
+marked `success`, this hung forever. It looked at first like connection leaks (repeated testing did
+leave real leaked Postgres sessions behind, which cost real debugging time), but the actual cause was
+structural: the outer save's transaction was still open, waiting on the hook to finish; the nested
+`update()` tried to re-lock that same row from what can be a different connection; both waited on
+each other indefinitely. `SELECT ... FROM pg_locks` joined against itself (the standard Postgres
+"who's blocking whom" query) is what finally proved it, after simpler fixes (a fetch timeout, killing
+individual stuck backends) didn't touch the real cause.
+
+The fix was structural, not defensive: move the computed fields into a **`beforeChange`** hook and
+return them as part of `data`, so they're written in the *same* save statement the outer operation was
+already doing. No second write to the same row ever happens. (Nested writes to a *different*
+collection — e.g. creating the receipt PDF in `documents` — were never the problem; there's no lock
+overlap across tables.)
+
+> **Rule:** if a hook needs to set a field on the document it was triggered by, compute it in
+> `beforeChange` and return it as `data`, never in `afterChange` via a second `payload.update()` call
+> on the same document. This applies to any Payload collection, not just Donations — see
+> [[odh-payload-hook-hardening]] in memory for the durable version of this rule, applied proactively
+> to new hook code going forward rather than found the hard way again.
 
 ---
 

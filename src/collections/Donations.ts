@@ -4,7 +4,7 @@ import { validatePan, validatePhone, validateUrl } from '../fields/validators'
 import { clearHiddenFields } from '../hooks/clearHiddenFields'
 import { generateReceipt } from '../hooks/generateReceipt'
 import { updateRaisedAmount } from '../hooks/updateRaisedAmount'
-
+import { APIError } from 'payload'
 
 
 type DonationData = { frequency?: string }
@@ -38,6 +38,78 @@ export const Donations: CollectionConfig = {
     ],
     afterChange: [updateRaisedAmount],
   },
+
+    endpoints: [
+    {
+      path: '/export',
+      method: 'get',
+      handler: async (req) => {
+        const isAuthorized =
+          req.user?.roles?.includes('finance') || req.user?.roles?.includes('super-admin')
+
+        if (!isAuthorized) {
+          throw new APIError('Unauthorized.', 401)
+        }
+
+        const url = new URL(req.url)
+        const from = url.searchParams.get('from')
+        const to = url.searchParams.get('to')
+
+        const where: Record<string, unknown> = { internalStatus: { equals: 'success' } }
+        if (from || to) {
+          where.createdAt = {
+            ...(from ? { greater_than_equal: from } : {}),
+            ...(to ? { less_than_equal: `${to}T23:59:59.999Z` } : {}),
+          }
+        }
+
+        const result = await req.payload.find({
+          collection: 'donations',
+          where,
+          limit: 0,
+          depth: 1,
+          sort: 'createdAt',
+          overrideAccess: true,
+        })
+
+        const header = [
+          'Receipt Number', 'Date', 'Donor Name', 'Email', 'Phone', 'PAN',
+          'Amount', 'Frequency', 'Campaign', 'Project', 'Gateway', 'Gateway Txn ID',
+        ]
+
+        const escapeCsv = (value: unknown): string => {
+          const str = value === null || value === undefined ? '' : String(value)
+          return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str
+        }
+
+        const rows = result.docs.map((d) => [
+          d.receiptNumber ?? '',
+          new Date(d.createdAt).toLocaleDateString('en-IN'),
+          d.donorName,
+          d.email,
+          d.phone,
+          d.pan ?? '',
+          d.amount,
+          d.frequency,
+          typeof d.campaign === 'object' ? d.campaign?.title : '',
+          typeof d.project === 'object' ? d.project?.title : '',
+          d.gateway,
+          d.gatewayTxnId ?? '',
+        ])
+
+        const csv = [header, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\n')
+
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="donations-${from ?? 'all'}-${to ?? 'all'}.csv"`,
+          },
+        })
+      },
+    },
+  ],
+
 
   fields: [
     // ---- Donor ----

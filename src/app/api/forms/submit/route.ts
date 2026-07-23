@@ -1,5 +1,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { sendFormNotification } from '../../../../hooks/sendFormNotification'
+
 
 type FormFieldDef = {
   name: string
@@ -120,6 +122,17 @@ export async function POST(request: Request) {
       data: sanitizedData,
     },
   })
+  const siteSettings = await payload.findGlobal({ slug: 'site-settings' })
+
+  try {
+    await sendFormNotification({
+      to: siteSettings.contact.email,
+      formType: block.formType ?? 'contact',
+      entries: fields.map((field) => ({ label: field.label, value: sanitizedData[field.name] })),
+    })
+  } catch (err) {
+    payload.logger.error(`sendFormNotification failed: ${err}`)
+  }
 
   return Response.json({ success: true })
 }

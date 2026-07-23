@@ -7,7 +7,10 @@ const donateSchema = z.object({
   donorName: z.string().min(1).max(200),
   email: z.string().email(),
   phone: z.string().min(10).max(15),
-  pan: z.string().optional(),
+pan: z
+  .string()
+  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'Invalid PAN')
+  .optional(),
   address: z.string().optional(),
   amount: z.number().int().min(100), // whole rupees, ≥ ₹100 — spec §7
   frequency: z.enum(['one-time', 'monthly']),

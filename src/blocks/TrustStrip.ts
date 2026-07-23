@@ -22,8 +22,7 @@ export const TrustStrip: Block = {
   type: 'array',
   fields: [
     { name: 'name', type: 'text', required: true },
-    { name: 'logo', type: 'upload', relationTo: 'graphics', required: true },
-    //                                            ↑ 'media' se 'graphics'
+    { name: 'logo', type: 'upload', relationTo: 'graphics', required: true },                                         
     { name: 'url', type: 'text' },
   ],
 },

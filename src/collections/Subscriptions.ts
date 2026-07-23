@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isFinance, isSuperAdmin } from '../access'
 import { validatePan, validatePhone } from '../fields/validators'
+import crypto from 'crypto'
+import { APIError } from 'payload'
 
 export const Subscriptions: CollectionConfig = {
   slug: 'subscriptions',
@@ -20,6 +22,17 @@ export const Subscriptions: CollectionConfig = {
     update: isFinance,
     delete: isSuperAdmin,
   },
+    hooks: {
+    beforeChange: [
+      ({ data, operation }) => {
+        if (operation === 'create' && !data.cancelToken) {
+          data.cancelToken = crypto.randomBytes(24).toString('hex')
+        }
+        return data
+      },
+    ],
+  },
+
   timestamps: true,
   fields: [
     { name: 'donorName', type: 'text', required: true },
@@ -65,4 +78,44 @@ export const Subscriptions: CollectionConfig = {
       },
     },
   ],
+    endpoints: [
+    {
+      path: '/cancel',
+      method: 'post',
+      handler: async (req) => {
+        const body = await req.json().catch(() => null)
+        const cancelToken = body?.cancelToken
+
+        if (!cancelToken || typeof cancelToken !== 'string') {
+          throw new APIError('cancelToken is required.', 400)
+        }
+
+        const result = await req.payload.find({
+          collection: 'subscriptions',
+          where: { cancelToken: { equals: cancelToken } },
+          overrideAccess: true,
+          limit: 1,
+        })
+
+        const subscription = result.docs[0]
+        if (!subscription) {
+          throw new APIError('Invalid cancellation link.', 404)
+        }
+
+        if (subscription.status === 'cancelled') {
+          return Response.json({ success: true, alreadyCancelled: true })
+        }
+
+        await req.payload.update({
+          collection: 'subscriptions',
+          id: subscription.id,
+          overrideAccess: true,
+          data: { status: 'cancelled' },
+        })
+
+        return Response.json({ success: true })
+      },
+    },
+  ],
+
 }

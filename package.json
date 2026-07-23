@@ -1,7 +1,7 @@
 {
   "name": "odh-foundation-web",
   "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "description": "ODH Foundation CMS Backend built with Payload CMS 3 and Next.js",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -21,6 +21,7 @@
     "@payloadcms/db-postgres": "3.85.2",
     "@payloadcms/next": "3.85.2",
     "@payloadcms/richtext-lexical": "3.85.2",
+    "@payloadcms/storage-r2": "^3.86.0",
     "@payloadcms/ui": "3.85.2",
     "@react-pdf/renderer": "^4.5.1",
     "cross-env": "^7.0.3",

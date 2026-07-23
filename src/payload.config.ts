@@ -4,6 +4,8 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { r2Storage } from '@payloadcms/storage-r2'
+
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
@@ -20,6 +22,8 @@ import { Careers } from './collections/Careers'
 import { Donations } from './collections/Donations'
 import { Subscriptions } from './collections/Subscriptions'
 import { FormSubmissions } from './collections/FormSubmissions'
+import { Redirects } from './collections/Redirects'
+
 
 
 
@@ -60,6 +64,7 @@ export default buildConfig(
       Donations,
       Subscriptions,
       FormSubmissions,
+      Redirects,
     ],
     globals: [SiteSettings, Navigation, DonationSettings],
     editor: lexicalEditor(),
@@ -93,6 +98,30 @@ export default buildConfig(
         )
       `)
     },
-    plugins: [],
+      plugins: [
+      // R2_BUCKET set hone tak local disk pe hi chalega — koi crash nahi. Jaise hi
+      // credentials .env mein aayenge, agli restart pe khud R2 use hone lagega.
+      ...(process.env.R2_BUCKET
+        ? [
+            r2Storage({
+              collections: {
+                media: true,
+                graphics: true,
+                documents: true,
+              },
+              bucket: process.env.R2_BUCKET,
+              config: {
+                credentials: {
+                  accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+                  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+                },
+                region: 'auto',
+                endpoint: process.env.R2_ENDPOINT || '',
+              },
+            }),
+          ]
+        : []),
+    ],
+
   }),
 )
