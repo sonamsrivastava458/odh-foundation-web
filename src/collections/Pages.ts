@@ -24,6 +24,11 @@ import { ImageGallery } from '../blocks/ImageGallery'
 import { VideoEmbed } from '../blocks/VideoEmbed'
 import { MapContact } from '../blocks/MapContact'
 import { FeatureCards } from '../blocks/FeatureCards'
+import{ HomeIntroSection } from '../blocks/HomeIntroSection'
+import { WhyODHFoundation } from '../blocks/WhyODHFoundation'
+import { OurCauses } from '../blocks/OurCauses'
+import { VolunteerCTA } from '../blocks/VolunteerCTA'
+import { AboutIntroSection } from '../blocks/AboutIntroSection'
 
 
 
@@ -79,6 +84,11 @@ export const Pages: CollectionConfig = {
   VideoEmbed,
   MapContact,
   FeatureCards,
+  HomeIntroSection,
+  WhyODHFoundation,
+  OurCauses,
+  VolunteerCTA,
+  AboutIntroSection,
 ],
 
     },

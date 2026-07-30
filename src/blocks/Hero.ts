@@ -10,29 +10,50 @@ export const Hero: Block = {
     {
       name: 'slides',
       type: 'array',
+      label: 'Hero Slides',
       required: true,
       minRows: 1,
-      maxRows: 3, // doc §5.1 -> "Rotating (max 3)"
+      maxRows: 3,
       fields: [
-        { name: 'headline', type: 'text', required: true },
-        { name: 'subline', type: 'textarea' },
-        { name: 'image', type: 'upload', relationTo: 'media', required: true },
-      ],
-    },
-    {
-      name: 'primaryCta',
-      type: 'group',
-      fields: [
-        { name: 'label', type: 'text', defaultValue: 'Donate Now' },
-        { name: 'href', type: 'text', defaultValue: '/donate' },
-      ],
-    },
-    {
-      name: 'secondaryCta',
-      type: 'group',
-      fields: [
-        { name: 'label', type: 'text', defaultValue: 'Explore Our Work' },
-        { name: 'href', type: 'text', defaultValue: '/projects' },
+        {
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'highlightText',
+          label: 'Highlight Text',
+          type: 'text',
+        },
+        {
+          name: 'description',
+          label: 'Description',
+          type: 'textarea',
+        },
+        {
+          name: 'backgroundImage',
+          label: 'Background Image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+        {
+          name: 'button',
+          type: 'group',
+          fields: [
+            {
+              name: 'label',
+              type: 'text',
+              defaultValue: 'Donate Now',
+            },
+            {
+              name: 'href',
+              type: 'text',
+              defaultValue: '/donate',
+            },
+          ],
+        },
       ],
     },
   ],

@@ -7,15 +7,37 @@ export const ImageGallery: Block = {
     plural: 'Image Galleries',
   },
   fields: [
-    { name: 'heading', type: 'text' },
+    {
+      name: 'heading',
+      type: 'text',
+      required: true,
+      defaultValue: 'Our Gallery',
+    },
     {
       name: 'images',
       type: 'array',
       required: true,
       minRows: 1,
+      maxRows: 12,
+      labels: {
+        singular: 'Image',
+        plural: 'Images',
+      },
       fields: [
-        { name: 'image', type: 'upload', relationTo: 'media', required: true },
-        { name: 'caption', type: 'text' },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+        {
+          name: 'title',
+          type: 'text',
+          admin: {
+            description:
+              'Optional. Used only for future lightbox/gallery popup.',
+          },
+        },
       ],
     },
   ],

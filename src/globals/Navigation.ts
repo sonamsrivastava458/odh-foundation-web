@@ -2,18 +2,19 @@ import type { GlobalConfig, Validate } from 'payload'
 import { isEditor, isPublic } from '../access'
 import { clearHiddenNavFields } from '../hooks/clearHiddenNavFields'
 
+
 type HeaderItem = {
   label?: string
   style?: string
   children?: unknown[] | null
-  featuredProject?: unknown
 }
-
 /**
  * `condition` sirf UI chhupata hai aur `required` hidden fields par nahi chalta —
  * isliye "Dropdown" bina links ke, ya "Mega-menu" bina featured project ke save ho jaata tha.
  * Ye check poore array par chalta hai, jahan har item ka style aur uska data dono dikhte hain.
  */
+
+
 const headerItemsAreComplete: Validate = (value) => {
   if (!Array.isArray(value)) return true
 
@@ -24,20 +25,22 @@ const headerItemsAreComplete: Validate = (value) => {
     const name = item.label?.trim() || `Item ${index + 1}`
 
     if (item.style === 'dropdown') {
-      const links = Array.isArray(item.children) ? item.children : []
-      if (links.length === 0) {
-        problems.push(`“${name}” is a dropdown but has no links.`)
-      }
-    }
+      const links = Array.isArray(item.children)
+        ? item.children
+        : []
 
-    if (item.style === 'megaMenu' && !item.featuredProject) {
-      problems.push(`“${name}” is a mega-menu but has no featured project.`)
+      if (links.length === 0) {
+        problems.push(
+          `“${name}” is a dropdown but has no links.`,
+        )
+      }
     }
   })
 
-  return problems.length > 0 ? problems.join(' ') : true
+  return problems.length
+    ? problems.join(' ')
+    : true
 }
-
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
   label: 'Navigation',
@@ -56,121 +59,142 @@ export const Navigation: GlobalConfig = {
     {
       type: 'tabs',
       tabs: [
+   {
+  label: 'Header',
+  fields: [
+    {
+      name: 'headerItems',
+      type: 'array',
+      label: 'Menu Items',
+      maxRows: 12,
+      validate: headerItemsAreComplete,
+      admin: {
+        description:
+          'Drag & drop to change the order of the header menu.',
+      },
+      fields: [
         {
-          label: 'Header',
-          fields: [
+          name: 'label',
+          type: 'text',
+          required: true,
+          admin: {
+            description:
+              'Example: Home, About Us, Our Projects, Campaigns',
+          },
+        },
+
+        {
+          name: 'href',
+          type: 'text',
+          required: true,
+          admin: {
+            description:
+              'Internal path. Example: /about-us',
+          },
+        },
+
+        {
+          name: 'style',
+          type: 'select',
+          required: true,
+          defaultValue: 'link',
+          label: 'Menu Type',
+          options: [
             {
-              name: 'headerItems',
-              type: 'array',
-              label: 'Menu Items',
-              maxRows: 8,
-              validate: headerItemsAreComplete,        // 👈 ye add hua
-              admin: {
-                description:
-                  'Shown left to right. The Donate button is separate — see below.',
-              },
-              fields: [
-                { name: 'label', type: 'text', required: true },
-                { name: 'href', type: 'text', required: true },
-                {
-                  name: 'style',
-                  type: 'select',
-                  required: true,
-                  defaultValue: 'link',
-                  label: 'Menu type',
-                  options: [
-                    { label: 'Plain link', value: 'link' },
-                    { label: 'Dropdown', value: 'dropdown' },
-                    { label: 'Projects mega-menu (all categories)', value: 'megaMenu' },
-                  ],
-                },
-                {
-                  name: 'children',
-                  type: 'array',
-                  label: 'Dropdown links',
-                  admin: {
-                    condition: (_, siblingData) => siblingData?.style === 'dropdown',
-                  },
-                  fields: [
-                    { name: 'label', type: 'text', required: true },
-                    { name: 'href', type: 'text', required: true },
-                  ],
-                },
-                {
-                  name: 'featuredProject',
-                  type: 'relationship',
-                  relationTo: 'projects',
-                  label: 'Featured project card',
-                  admin: {
-                    condition: (_, siblingData) => siblingData?.style === 'megaMenu',
-                    description:
-                      'Shown on the right of the mega-menu. Categories are pulled in automatically.',
-                  },
-                },
-              ],
+              label: 'Plain Link',
+              value: 'link',
             },
             {
-              name: 'donateCta',
-              type: 'group',
-              label: 'Donate Button',
-              fields: [
-                { name: 'label', type: 'text', required: true, defaultValue: 'Donate Now' },
-                { name: 'href', type: 'text', required: true, defaultValue: '/donate' },
-              ],
+              label: 'Dropdown',
+              value: 'dropdown',
             },
           ],
         },
 
         {
-          label: 'Footer',
+          name: 'children',
+          type: 'array',
+          label: 'Dropdown Links',
+          admin: {
+            description:
+              'Shown only when the menu type is Dropdown.',
+            condition: (_, siblingData) =>
+              siblingData?.style === 'dropdown',
+          },
+          minRows: 1,
           fields: [
             {
-              name: 'footerColumns',
-              type: 'array',
-              label: 'Link Columns',
-              maxRows: 4,
-              fields: [
-                { name: 'title', type: 'text', required: true },
-                {
-                  name: 'links',
-                  type: 'array',
-                  required: true,
-                  minRows: 1,
-                  fields: [
-                    { name: 'label', type: 'text', required: true },
-                    { name: 'href', type: 'text', required: true },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'legalLine',
+              name: 'label',
               type: 'text',
-              admin: {
-                description:
-                  'Bottom bar text, for example: Registered under the Indian Trusts Act, 1882.',
-              },
+              required: true,
+              
             },
+
             {
-              name: 'newsletter',
-              type: 'group',
-              fields: [
-                {
-                  name: 'enabled',
-                  type: 'checkbox',
-                  label: 'Show newsletter signup',
-                  defaultValue: true,
-                },
-                { name: 'heading', type: 'text', defaultValue: 'Stay updated' },
-                {
-                  name: 'blurb',
-                  type: 'text',
-                  defaultValue: 'Field stories and impact reports, once a month.',
-                },
-              ],
+              name: 'href',
+              type: 'text',
+              required: true,
+              
             },
           ],
         },
+      ],
+    },
+  ],
+},
+        {
+  label: 'Footer',
+  fields: [
+    {
+      name: 'footerColumns',
+      type: 'array',
+      label: 'Footer Link Columns',
+      maxRows: 2,
+      admin: {
+        description:
+          'Footer link sections like Quick Links.',
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'links',
+          type: 'array',
+          required: true,
+          minRows: 1,
+          fields: [
+            {
+              name: 'label',
+              type: 'text',
+              required: true,
+            },
+            {
+              name: 'href',
+              type: 'text',
+              required: true,
+       
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      name: 'legalLine',
+      type: 'text',
+      required: true,
+      defaultValue:
+        'Copyright © ODH Foundation NGO in India. All Rights Reserved.',
+      admin: {
+        description:
+          'Bottom copyright text.',
+      },
+    },
+  ],
+}
       ],
     },
   ],

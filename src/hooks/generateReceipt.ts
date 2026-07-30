@@ -1,7 +1,7 @@
 import type { CollectionBeforeChangeHook, PayloadRequest } from 'payload'
 import type { Donation } from '../payload-types'
 import React from 'react'
-import { renderToBuffer } from '@react-pdf/renderer'
+import { renderToBuffer , DocumentProps  } from '@react-pdf/renderer'
 import { ReceiptPDF } from './ReceiptPDF'
 import { sendReceiptEmail } from './sendReceiptEmail'
 import sharp from 'sharp'
@@ -63,6 +63,9 @@ export const generateReceipt: CollectionBeforeChangeHook<Donation> = async ({
 }) => {
   if (operation !== 'update') return data
   if (data.internalStatus !== 'success') return data
+  if (!originalDoc) {
+  throw new Error('originalDoc is required')
+}
   if (originalDoc?.internalStatus === 'success') return data // already processed
 
   const donorName = data.donorName ?? originalDoc.donorName
@@ -83,29 +86,28 @@ export const generateReceipt: CollectionBeforeChangeHook<Donation> = async ({
     ? await fetchAsPngDataUri(`${process.env.NEXT_PUBLIC_SITE_URL}${signatureImagePath}`)
     : undefined
 
-  const pdfBuffer = await renderToBuffer(
-    React.createElement(ReceiptPDF, {
-      receiptNumber,
-      signatureImageBase64,
-      date: new Date(originalDoc.createdAt).toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }),
-      donorName,
-      donorEmail: email,
-      donorPan: pan ?? undefined,
-      amount,
-      frequency,
-      orgName: siteSettings.siteName,
-      orgPan: siteSettings.registrations?.pan ?? undefined,
-      org80G: siteSettings.registrations?.reg80G ?? undefined,
-      signatoryName: donationSettings.receipt?.signatoryName ?? undefined,
-      signatoryRole: donationSettings.receipt?.signatoryRole ?? undefined,
-      statement80G: donationSettings.receipt?.statement80G ?? undefined,
+ const pdfBuffer = await renderToBuffer(
+  React.createElement(ReceiptPDF, {
+    receiptNumber,
+    signatureImageBase64,
+    date: new Date(originalDoc.createdAt).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     }),
-  )
-
+    donorName,
+    donorEmail: email,
+    donorPan: pan ?? undefined,
+    amount,
+    frequency,
+    orgName: siteSettings.siteName,
+    orgPan: siteSettings.registrations?.pan ?? undefined,
+    org80G: siteSettings.registrations?.reg80G ?? undefined,
+    signatoryName: donationSettings.receipt?.signatoryName ?? undefined,
+    signatoryRole: donationSettings.receipt?.signatoryRole ?? undefined,
+    statement80G: donationSettings.receipt?.statement80G ?? undefined,
+  }) as unknown as React.ReactElement<DocumentProps>,
+)
   const receiptDoc = await req.payload.create({
     collection: 'documents',
     overrideAccess: true,

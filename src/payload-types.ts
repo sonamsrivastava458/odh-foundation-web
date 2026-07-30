@@ -304,19 +304,16 @@ export interface Page {
     | (
         | {
             slides: {
-              headline: string;
-              subline?: string | null;
-              image: number | Media;
+              title: string;
+              highlightText?: string | null;
+              description?: string | null;
+              backgroundImage: number | Media;
+              button?: {
+                label?: string | null;
+                href?: string | null;
+              };
               id?: string | null;
             }[];
-            primaryCta?: {
-              label?: string | null;
-              href?: string | null;
-            };
-            secondaryCta?: {
-              label?: string | null;
-              href?: string | null;
-            };
             id?: string | null;
             blockName?: string | null;
             blockType: 'hero';
@@ -593,10 +590,13 @@ export interface Page {
             blockType: 'formBlock';
           }
         | {
-            heading?: string | null;
+            heading: string;
             images: {
               image: number | Media;
-              caption?: string | null;
+              /**
+               * Optional. Used only for future lightbox/gallery popup.
+               */
+              title?: string | null;
               id?: string | null;
             }[];
             id?: string | null;
@@ -643,6 +643,111 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'featureCards';
+          }
+        | {
+            about: {
+              title: string;
+              description: string;
+              button?: {
+                label?: string | null;
+                href?: string | null;
+              };
+            };
+            featuredProject: {
+              title: string;
+              images: {
+                image: number | Media;
+                id?: string | null;
+              }[];
+            };
+            getInvolved: {
+              heading?: string | null;
+              items: {
+                icon: number | Graphic;
+                title: string;
+                href: string;
+                id?: string | null;
+              }[];
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'homeIntroSection';
+          }
+        | {
+            heading: string;
+            description: string;
+            features: {
+              icon: number | Graphic;
+              title: string;
+              description: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'whyODHFoundation';
+          }
+        | {
+            heading: string;
+            /**
+             * Short text displayed below the heading.
+             */
+            description: string;
+            causes: {
+              image: number | Media;
+              title: string;
+              description: string;
+              button?: {
+                label?: string | null;
+                href?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'ourCauses';
+          }
+        | {
+            backgroundImage: number | Media;
+            foregroundImage: number | Media;
+            heading: string;
+            description: string;
+            button: {
+              label: string;
+              href: string;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'volunteerCTA';
+          }
+        | {
+            leftHeading: string;
+            rightHeading: string;
+            description: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            button: {
+              label?: string | null;
+              href: string;
+            };
+            sliderImages: {
+              image: number | Media;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'aboutIntroSection';
           }
       )[]
     | null;
@@ -1472,22 +1577,17 @@ export interface PagesSelect<T extends boolean = true> {
               slides?:
                 | T
                 | {
-                    headline?: T;
-                    subline?: T;
-                    image?: T;
+                    title?: T;
+                    highlightText?: T;
+                    description?: T;
+                    backgroundImage?: T;
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
                     id?: T;
-                  };
-              primaryCta?:
-                | T
-                | {
-                    label?: T;
-                    href?: T;
-                  };
-              secondaryCta?:
-                | T
-                | {
-                    label?: T;
-                    href?: T;
                   };
               id?: T;
               blockName?: T;
@@ -1756,7 +1856,7 @@ export interface PagesSelect<T extends boolean = true> {
                 | T
                 | {
                     image?: T;
-                    caption?: T;
+                    title?: T;
                     id?: T;
                   };
               id?: T;
@@ -1797,6 +1897,123 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     label?: T;
                     file?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        homeIntroSection?:
+          | T
+          | {
+              about?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
+                  };
+              featuredProject?:
+                | T
+                | {
+                    title?: T;
+                    images?:
+                      | T
+                      | {
+                          image?: T;
+                          id?: T;
+                        };
+                  };
+              getInvolved?:
+                | T
+                | {
+                    heading?: T;
+                    items?:
+                      | T
+                      | {
+                          icon?: T;
+                          title?: T;
+                          href?: T;
+                          id?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        whyODHFoundation?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        ourCauses?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              causes?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    description?: T;
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          href?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        volunteerCTA?:
+          | T
+          | {
+              backgroundImage?: T;
+              foregroundImage?: T;
+              heading?: T;
+              description?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        aboutIntroSection?:
+          | T
+          | {
+              leftHeading?: T;
+              rightHeading?: T;
+              description?: T;
+              button?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                  };
+              sliderImages?:
+                | T
+                | {
+                    image?: T;
+                    id?: T;
                   };
               id?: T;
               blockName?: T;
@@ -2155,51 +2372,83 @@ export interface SiteSetting {
   id: number;
   siteName: string;
   /**
-   * One-line mission statement. Shown in the footer.
-   */
-  tagline?: string | null;
-  /**
-   * SVG preferred. Shown in the header.
+   * Shown in the website header.
    */
   logo: number | Graphic;
   /**
-   * Optional light version, for use on dark backgrounds such as the footer.
+   * Shown in the footer on dark backgrounds.
    */
   logoLight?: (number | null) | Graphic;
   /**
-   * Browser tab icon. 32 × 32 px or an SVG.
+   * Browser tab icon.
    */
   favicon?: (number | null) | Graphic;
   /**
-   * Used when a page has no share image of its own. Recommended 1200 × 630 px.
+   * Used when a page does not have its own Open Graph image.
    */
   defaultOgImage?: (number | null) | Media;
+  newsletter: {
+    heading: string;
+    description: string;
+    placeholder?: string | null;
+    buttonLabel?: string | null;
+  };
   contact: {
     /**
-     * Registered office address, shown in the footer.
+     * Registered office address displayed on the footer and contact page.
      */
     address: string;
-    phone: string;
+    /**
+     * Office landline number. Example: 0512-2220000
+     */
+    phone?: string | null;
+    /**
+     * Primary mobile number shown on the website.
+     */
+    mobile: string;
+    /**
+     * Primary contact email.
+     */
     email: string;
     /**
-     * For example: Mon–Fri, 10:00 – 18:00
+     * Example: Monday – Friday, 10:00 AM – 6:00 PM
      */
     hours?: string | null;
     /**
-     * Opens when someone clicks the map on the Contact page.
+     * Google Maps link opened from the Contact page.
      */
     mapUrl?: string | null;
+    /**
+     * QR code displayed in the website footer.
+     */
+    qrCode?: (number | null) | Graphic;
+    /**
+     * Short text displayed below the QR code.
+     */
+    qrCaption?: string | null;
   };
   /**
-   * Shown in the footer and on the trust strip. Donors check these before giving.
+   * Official organisation registration numbers displayed across the website.
    */
   registrations?: {
+    /**
+     * Permanent Account Number of the organisation.
+     */
     pan?: string | null;
+    /**
+     * Registration number used for tax exemption under Section 80G.
+     */
     reg80G?: string | null;
+    /**
+     * Registration number under Section 12A.
+     */
     reg12A?: string | null;
+    /**
+     * CSR-1 registration number of the organisation.
+     */
     csr1?: string | null;
     /**
-     * Downloadable PDFs shown on the About page.
+     * Upload registration certificates that visitors can download from the website.
      */
     certificates?:
       | {
@@ -2211,16 +2460,24 @@ export interface SiteSetting {
   };
   socialLinks?:
     | {
-        platform: 'facebook' | 'instagram' | 'linkedin' | 'x' | 'youtube';
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'x' | 'youtube' | 'whatsapp';
         url: string;
         id?: string | null;
       }[]
     | null;
-  announcement?: {
+  topHeader?: {
     enabled?: boolean | null;
-    text?: string | null;
-    linkLabel?: string | null;
-    linkHref?: string | null;
+    /**
+     * Drag and drop to change the display order.
+     */
+    items?:
+      | {
+          type: 'email' | 'pan' | '80g' | 'csr1' | 'careers' | 'login' | 'custom';
+          label: string;
+          url?: string | null;
+          id?: string | null;
+        }[]
+      | null;
   };
   /**
    * For example: G-XXXXXXXXXX
@@ -2239,13 +2496,22 @@ export interface SiteSetting {
 export interface Navigation {
   id: number;
   /**
-   * Shown left to right. The Donate button is separate — see below.
+   * Drag & drop to change the order of the header menu.
    */
   headerItems?:
     | {
+        /**
+         * Example: Home, About Us, Our Projects, Campaigns
+         */
         label: string;
+        /**
+         * Internal path. Example: /about-us
+         */
         href: string;
-        style: 'link' | 'dropdown' | 'megaMenu';
+        style: 'link' | 'dropdown';
+        /**
+         * Shown only when the menu type is Dropdown.
+         */
         children?:
           | {
               label: string;
@@ -2253,17 +2519,12 @@ export interface Navigation {
               id?: string | null;
             }[]
           | null;
-        /**
-         * Shown on the right of the mega-menu. Categories are pulled in automatically.
-         */
-        featuredProject?: (number | null) | Project;
         id?: string | null;
       }[]
     | null;
-  donateCta: {
-    label: string;
-    href: string;
-  };
+  /**
+   * Footer link sections like Quick Links.
+   */
   footerColumns?:
     | {
         title: string;
@@ -2276,14 +2537,9 @@ export interface Navigation {
       }[]
     | null;
   /**
-   * Bottom bar text, for example: Registered under the Indian Trusts Act, 1882.
+   * Bottom copyright text.
    */
-  legalLine?: string | null;
-  newsletter?: {
-    enabled?: boolean | null;
-    heading?: string | null;
-    blurb?: string | null;
-  };
+  legalLine: string;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2358,19 +2614,29 @@ export interface DonationSetting {
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteName?: T;
-  tagline?: T;
   logo?: T;
   logoLight?: T;
   favicon?: T;
   defaultOgImage?: T;
+  newsletter?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        placeholder?: T;
+        buttonLabel?: T;
+      };
   contact?:
     | T
     | {
         address?: T;
         phone?: T;
+        mobile?: T;
         email?: T;
         hours?: T;
         mapUrl?: T;
+        qrCode?: T;
+        qrCaption?: T;
       };
   registrations?:
     | T
@@ -2394,13 +2660,18 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         url?: T;
         id?: T;
       };
-  announcement?:
+  topHeader?:
     | T
     | {
         enabled?: T;
-        text?: T;
-        linkLabel?: T;
-        linkHref?: T;
+        items?:
+          | T
+          | {
+              type?: T;
+              label?: T;
+              url?: T;
+              id?: T;
+            };
       };
   ga4Id?: T;
   clarityId?: T;
@@ -2426,14 +2697,7 @@ export interface NavigationSelect<T extends boolean = true> {
               href?: T;
               id?: T;
             };
-        featuredProject?: T;
         id?: T;
-      };
-  donateCta?:
-    | T
-    | {
-        label?: T;
-        href?: T;
       };
   footerColumns?:
     | T
@@ -2449,13 +2713,6 @@ export interface NavigationSelect<T extends boolean = true> {
         id?: T;
       };
   legalLine?: T;
-  newsletter?:
-    | T
-    | {
-        enabled?: T;
-        heading?: T;
-        blurb?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

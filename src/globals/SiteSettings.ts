@@ -18,55 +18,93 @@ export const SiteSettings: GlobalConfig = {
       type: 'tabs',
       tabs: [
         // ---------- Brand ----------
+    // ---------- Brand ----------
+{
+  label: 'Brand',
+  fields: [
+    {
+      name: 'siteName',
+      type: 'text',
+      required: true,
+      defaultValue: 'ODH Foundation',
+    },
+
+    {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'graphics',
+      required: true,
+      admin: {
+        description: 'Shown in the website header.',
+      },
+    },
+
+    {
+      name: 'logoLight',
+      type: 'upload',
+      relationTo: 'graphics',
+      admin: {
+        description: 'Shown in the footer on dark backgrounds.',
+      },
+    },
+
+    {
+      name: 'favicon',
+      type: 'upload',
+      relationTo: 'graphics',
+      admin: {
+        description: 'Browser tab icon.',
+      },
+    },
+
+    {
+      name: 'defaultOgImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Default Social Share Image',
+      admin: {
+        description:
+          'Used when a page does not have its own Open Graph image.',
+      },
+    },
+
+    // ---------------- Newsletter ----------------
+
+    {
+      name: 'newsletter',
+      type: 'group',
+      label: 'Newsletter Section',
+      fields: [
         {
-          label: 'Brand',
-          fields: [
-            {
-              name: 'siteName',
-              type: 'text',
-              required: true,
-              defaultValue: 'ODH Foundation',
-            },
-            {
-              name: 'tagline',
-              type: 'textarea',
-              admin: {
-                description: 'One-line mission statement. Shown in the footer.',
-              },
-            },
-            {
-              name: 'logo',
-              type: 'upload',
-              relationTo: 'graphics',
-              required: true,
-              admin: { description: 'SVG preferred. Shown in the header.' },
-            },
-            {
-              name: 'logoLight',
-              type: 'upload',
-              relationTo: 'graphics',
-              admin: {
-                description: 'Optional light version, for use on dark backgrounds such as the footer.',
-              },
-            },
-            {
-              name: 'favicon',
-              type: 'upload',
-              relationTo: 'graphics',
-              admin: { description: 'Browser tab icon. 32 × 32 px or an SVG.' },
-            },
-            {
-              name: 'defaultOgImage',
-              type: 'upload',
-              relationTo: 'media',
-              label: 'Default Social Share Image',
-              admin: {
-                description:
-                  'Used when a page has no share image of its own. Recommended 1200 × 630 px.',
-              },
-            },
-          ],
+          name: 'heading',
+          type: 'text',
+          required: true,
+          defaultValue: 'Sign Up For Latest Updates',
         },
+
+        {
+          name: 'description',
+          type: 'textarea',
+          required: true,
+          defaultValue:
+            'To keep yourself updated on latest news and programs at ODH Foundation, drop in your E-mail ID',
+        },
+
+        {
+          name: 'placeholder',
+          type: 'text',
+          defaultValue: 'Your Email',
+        },
+
+        {
+          name: 'buttonLabel',
+          type: 'text',
+          defaultValue: 'Subscribe',
+        },
+      ],
+    },
+  ],
+},
 
         // ---------- Contact ----------
         {
@@ -82,34 +120,85 @@ export const SiteSettings: GlobalConfig = {
                   type: 'textarea',
                   required: true,
                   admin: {
-                    description: 'Registered office address, shown in the footer.',
-                    // Pate me line breaks chahiye — isliye sanitizePlainText isse chhod dega.
-                    custom: { multiline: true },
+                    description:
+                      'Registered office address displayed on the footer and contact page.',
+                    custom: {
+                      multiline: true,
+                    },
                   },
                 },
+
                 {
                   name: 'phone',
+                  label: 'Phone (Landline)',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Office landline number. Example: 0512-2220000',
+                  },
+                },
+
+                {
+                  name: 'mobile',
+                  label: 'Mobile Number',
                   type: 'text',
                   required: true,
                   validate: validatePhone,
+                  admin: {
+                    description:
+                      'Primary mobile number shown on the website.',
+                  },
                 },
+
                 {
                   name: 'email',
                   type: 'email',
                   required: true,
+                  admin: {
+                    description:
+                      'Primary contact email.',
+                  },
                 },
                 {
                   name: 'hours',
+                  label: 'Office Hours',
                   type: 'text',
-                  admin: { description: 'For example: Mon–Fri, 10:00 – 18:00' },
+                  admin: {
+                    description:
+                      'Example: Monday – Friday, 10:00 AM – 6:00 PM',
+                  },
                 },
+
                 {
                   name: 'mapUrl',
+                  label: 'Google Maps URL',
                   type: 'text',
-                  label: 'Google Maps Link',
                   validate: validateUrl,
                   admin: {
-                    description: 'Opens when someone clicks the map on the Contact page.',
+                    description:
+                      'Google Maps link opened from the Contact page.',
+                  },
+                },
+
+                {
+                  name: 'qrCode',
+                  label: 'Donation QR Code',
+                  type: 'upload',
+                  relationTo: 'graphics',
+                  admin: {
+                    description:
+                      'QR code displayed in the website footer.',
+                  },
+                },
+
+                {
+                  name: 'qrCaption',
+                  label: 'QR Caption',
+                  type: 'text',
+                  defaultValue: 'Scan to Donate',
+                  admin: {
+                    description:
+                      'Short text displayed below the QR code.',
                   },
                 },
               ],
@@ -127,28 +216,74 @@ export const SiteSettings: GlobalConfig = {
               label: false,
               admin: {
                 description:
-                  'Shown in the footer and on the trust strip. Donors check these before giving.',
+                  'Official organisation registration numbers displayed across the website.',
               },
               fields: [
                 {
                   name: 'pan',
                   type: 'text',
-                  label: 'PAN',
+                  label: 'PAN Number',
                   validate: validatePan,
+                  admin: {
+                    description:
+                      'Permanent Account Number of the organisation.',
+                  },
                 },
-                { name: 'reg80G', type: 'text', label: '80G Registration Number' },
-                { name: 'reg12A', type: 'text', label: '12A Registration Number' },
-                { name: 'csr1', type: 'text', label: 'CSR-1 Registration Number' },
+
+                {
+                  name: 'reg80G',
+                  type: 'text',
+                  label: '80G Registration Number',
+                  admin: {
+                    description:
+                      'Registration number used for tax exemption under Section 80G.',
+                  },
+                },
+
+                {
+                  name: 'reg12A',
+                  type: 'text',
+                  label: '12A Registration Number',
+                  admin: {
+                    description:
+                      'Registration number under Section 12A.',
+                  },
+                },
+
+                {
+                  name: 'csr1',
+                  type: 'text',
+                  label: 'CSR-1 Registration Number',
+                  admin: {
+                    description:
+                      'CSR-1 registration number of the organisation.',
+                  },
+                },
+
                 {
                   name: 'certificates',
                   type: 'array',
-                  labels: { singular: 'Certificate', plural: 'Certificates' },
+                  labels: {
+                    singular: 'Certificate',
+                    plural: 'Certificates',
+                  },
                   admin: {
-                    description: 'Downloadable PDFs shown on the About page.',
+                    description:
+                      'Upload registration certificates that visitors can download from the website.',
                   },
                   fields: [
-                    { name: 'name', type: 'text', required: true },
-                    { name: 'file', type: 'upload', relationTo: 'documents', required: true },
+                    {
+                      name: 'name',
+                      type: 'text',
+                      required: true,
+                    },
+
+                    {
+                      name: 'file',
+                      type: 'upload',
+                      relationTo: 'documents',
+                      required: true,
+                    },
                   ],
                 },
               ],
@@ -176,6 +311,7 @@ export const SiteSettings: GlobalConfig = {
                     { label: 'LinkedIn', value: 'linkedin' },
                     { label: 'X (Twitter)', value: 'x' },
                     { label: 'YouTube', value: 'youtube' },
+                    { label: 'WhatsApp', value: 'whatsapp' },
                   ],
                 },
                 {
@@ -188,50 +324,93 @@ export const SiteSettings: GlobalConfig = {
             },
           ],
         },
-
-        // ---------- Announcement bar ----------
+        // ----------- Top Header ------------
         {
-          label: 'Announcement Bar',
+          label: 'Top Header',
           fields: [
             {
-              name: 'announcement',
+              name: 'topHeader',
               type: 'group',
               label: false,
               fields: [
                 {
                   name: 'enabled',
                   type: 'checkbox',
-                  label: 'Show announcement bar',
-                  defaultValue: false,
+                  label: 'Show Top Header',
+                  defaultValue: true,
                 },
+
                 {
-                  name: 'text',
-                  type: 'text',
-                  required: true,
-                  admin: {
-                    condition: (_, siblingData) => siblingData?.enabled === true,
+                  name: 'items',
+                  type: 'array',
+                  labels: {
+                    singular: 'Item',
+                    plural: 'Items',
                   },
-                },
-                {
-                  name: 'linkLabel',
-                  type: 'text',
                   admin: {
-                    condition: (_, siblingData) => siblingData?.enabled === true,
+                    description:
+                      'Drag and drop to change the display order.',
                   },
-                },
-                {
-                  name: 'linkHref',
-                  type: 'text',
-                  validate: validateInternalPath,
-                  admin: {
-                    condition: (_, siblingData) => siblingData?.enabled === true,
-                  },
+                  fields: [
+                    {
+                      name: 'type',
+                      type: 'select',
+                      required: true,
+                      options: [
+                        {
+                          label: 'Email',
+                          value: 'email',
+                        },
+                        {
+                          label: 'PAN',
+                          value: 'pan',
+                        },
+                        {
+                          label: '80G',
+                          value: '80g',
+                        },
+                        {
+                          label: 'CSR-1',
+                          value: 'csr1',
+                        },
+                        {
+                          label: 'Careers',
+                          value: 'careers',
+                        },
+                        {
+                          label: 'Login',
+                          value: 'login',
+                        },
+                        {
+                          label: 'Custom Link',
+                          value: 'custom',
+                        },
+                      ],
+                    },
+
+                    {
+                      name: 'label',
+                      type: 'text',
+                      required: true,
+                    },
+
+                    {
+                      name: 'url',
+                      type: 'text',
+                      validate: validateInternalPath,
+                      admin: {
+                        condition: (_, siblingData) =>
+                          ['careers', 'login', 'custom'].includes(
+                            siblingData?.type,
+                          ),
+                      },
+                    },
+                  ],
                 },
               ],
             },
           ],
         },
-
         // ---------- Analytics ----------
         {
           label: 'Analytics',

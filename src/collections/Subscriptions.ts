@@ -22,7 +22,7 @@ export const Subscriptions: CollectionConfig = {
     update: isFinance,
     delete: isSuperAdmin,
   },
-    hooks: {
+  hooks: {
     beforeChange: [
       ({ data, operation }) => {
         if (operation === 'create' && !data.cancelToken) {
@@ -78,11 +78,14 @@ export const Subscriptions: CollectionConfig = {
       },
     },
   ],
-    endpoints: [
+  endpoints: [
     {
       path: '/cancel',
       method: 'post',
       handler: async (req) => {
+        if (!req.json) {
+          throw new APIError('Invalid request.', 400)
+        }
         const body = await req.json().catch(() => null)
         const cancelToken = body?.cancelToken
 

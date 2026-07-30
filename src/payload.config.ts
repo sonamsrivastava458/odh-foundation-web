@@ -4,7 +4,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
-import { r2Storage } from '@payloadcms/storage-r2'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 
 import { Users } from './collections/Users'
@@ -45,6 +45,9 @@ export default buildConfig(
       user: Users.slug,
       importMap: {
         baseDir: path.resolve(dirname),
+      },
+        components: {
+        providers: ['./admin/CustomStyles#default'],
       },
     },
     collections: [
@@ -99,24 +102,24 @@ export default buildConfig(
       `)
     },
       plugins: [
-      // R2_BUCKET set hone tak local disk pe hi chalega — koi crash nahi. Jaise hi
-      // credentials .env mein aayenge, agli restart pe khud R2 use hone lagega.
-      ...(process.env.R2_BUCKET
+      // S3_BUCKET set hone tak local disk pe hi chalega — koi crash nahi. Jaise hi
+      // credentials .env mein aayenge, agli restart pe khud S3 use hone lagega.
+      ...(process.env.S3_BUCKET
         ? [
-            r2Storage({
+            s3Storage({
               collections: {
                 media: true,
                 graphics: true,
                 documents: true,
               },
-              bucket: process.env.R2_BUCKET,
+              bucket: process.env.S3_BUCKET,
               config: {
                 credentials: {
-                  accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-                  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+                  accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+                  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
                 },
                 region: 'auto',
-                endpoint: process.env.R2_ENDPOINT || '',
+                endpoint: process.env.S3_ENDPOINT || '',
               },
             }),
           ]

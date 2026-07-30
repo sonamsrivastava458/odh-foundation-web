@@ -14,8 +14,8 @@ pan: z
   address: z.string().optional(),
   amount: z.number().int().min(100), // whole rupees, ≥ ₹100 — spec §7
   frequency: z.enum(['one-time', 'monthly']),
-  campaign: z.string().optional(),
-  project: z.string().optional(),
+campaign: z.coerce.number().int().optional(),
+project: z.coerce.number().int().optional(),
   consent: z.object({
     termsAccepted: z.literal(true),
     contactPermission: z.boolean().optional(),

@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where} from 'payload'
 import { isFinance, isSuperAdmin } from '../access'
 import { validatePan, validatePhone, validateUrl } from '../fields/validators'
 import { clearHiddenFields } from '../hooks/clearHiddenFields'
@@ -29,7 +29,7 @@ export const Donations: CollectionConfig = {
     delete: isSuperAdmin, // financial records — deletion kept tighter than everyday edits
   },
   timestamps: true,
-   hooks: {
+  hooks: {
     beforeChange: [
       clearHiddenFields<DonationData>({
         subscriptionId: (d) => d.frequency === 'monthly',
@@ -39,7 +39,7 @@ export const Donations: CollectionConfig = {
     afterChange: [updateRaisedAmount],
   },
 
-    endpoints: [
+  endpoints: [
     {
       path: '/export',
       method: 'get',
@@ -50,12 +50,18 @@ export const Donations: CollectionConfig = {
         if (!isAuthorized) {
           throw new APIError('Unauthorized.', 401)
         }
+        const requestUrl = req.url
+
+        if (!requestUrl) {
+          throw new APIError('Request URL is missing.', 400)
+        }
+
 
         const url = new URL(req.url)
         const from = url.searchParams.get('from')
         const to = url.searchParams.get('to')
 
-        const where: Record<string, unknown> = { internalStatus: { equals: 'success' } }
+        const where: Where = { internalStatus: { equals: 'success' } }
         if (from || to) {
           where.createdAt = {
             ...(from ? { greater_than_equal: from } : {}),

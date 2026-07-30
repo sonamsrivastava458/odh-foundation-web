@@ -86,13 +86,19 @@ export async function POST(request: Request) {
   if (!page) {
     return Response.json({ error: 'Unknown page.' }, { status: 404 })
   }
+type FormType =
+  | 'contact'
+  | 'volunteer'
+  | 'csr'
+  | 'career'
+  | 'newsletter'
 
-  const layout = (page.layout ?? []) as Array<{
-    id?: string
-    blockType?: string
-    formType?: string
-    fields?: FormFieldDef[]
-  }>
+const layout = (page.layout ?? []) as Array<{
+  id?: string
+  blockType?: string
+  formType: FormType
+  fields?: FormFieldDef[]
+}>
   const block = layout.find((row) => row.id === blockId && row.blockType === 'formBlock')
 
   if (!block) {
@@ -120,6 +126,7 @@ export async function POST(request: Request) {
       page: page.id,
       blockId,
       data: sanitizedData,
+       status: 'new',
     },
   })
   const siteSettings = await payload.findGlobal({ slug: 'site-settings' })

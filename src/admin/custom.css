@@ -1,0 +1,1083 @@
+/* ============================================================
+   ODH FOUNDATION — Admin Panel Identity
+   A warm, editorial "registry" look instead of a generic
+   SaaS purple-gradient theme. Built around the idea of a
+   foundation's official record book: paper, ink, a seal.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
+
+:root {
+  /* Palette — forest green (growth/trust) + aged gold (philanthropy) on warm paper */
+  --ink:          #1B2420;
+  --forest:       #2F6F52;
+  --forest-deep:  #1F4D39;
+  --forest-soft:  rgba(47, 111, 82, 0.10);
+  --gold:         #C79A45;
+  --gold-soft:    rgba(199, 154, 69, 0.16);
+  --paper:        #F7F5EF;
+  --paper-card:   #FFFFFF;
+  --line:         #E4DFD1;
+  --muted:        #736E5E;
+
+  --font-display: 'Fraunces', 'Iowan Old Style', serif;
+  --font-body:    'Inter', -apple-system, sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+}
+
+/* ===== Page background ===== */
+.template-default__wrap {
+  background: var(--paper);
+}
+
+/* ===== Top header — becomes the "letterhead" ===== */
+.app-header {
+  background: var(--paper-card);
+  border-bottom: 1px solid var(--line);
+  box-shadow: none;
+  position: relative;
+  padding: 0 8px;
+}
+
+/* Brand hairline — a quiet gold thread under the letterhead,
+   echoing the same accent used on section labels below. */
+.app-header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold) 0%, transparent 55%);
+}
+
+.app-header__bg {
+  background: var(--ink);
+}
+
+.app-header__content {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+}
+
+/* Wordmark icon */
+.app-header a[href="/admin"] svg,
+.step-nav-icon svg {
+  color: var(--forest);
+}
+
+.step-nav,
+.step-nav__last {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.step-nav a {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.step-nav a:hover {
+  color: var(--forest-deep);
+}
+
+/* Breadcrumb dropdown chevron */
+.step-nav svg {
+  color: var(--muted);
+}
+
+/* Account / avatar area */
+.app-header .avatar,
+.app-header__actions .avatar {
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.app-header .avatar:hover,
+.app-header__actions .avatar:hover {
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+/* ===== Sidebar (main nav) ===== */
+.nav {
+  background: var(--paper-card);
+  border-right: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.nav-group {
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-group:last-child {
+  border-bottom: none;
+}
+
+.nav-group__label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+  padding: 0 20px;
+  margin-bottom: 6px;
+}
+
+.nav-group__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+}
+
+.nav__link {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  border-radius: 7px;
+  padding: 9px 12px;
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav__link-icon {
+  color: var(--muted);
+  transition: color 0.15s ease;
+}
+
+.nav__link:hover {
+  color: var(--forest-deep);
+  background: var(--forest-soft);
+}
+
+.nav__link:hover .nav__link-icon {
+  color: var(--forest);
+}
+
+.nav__link--active {
+  background: var(--forest-soft);
+  color: var(--forest-deep);
+  font-weight: 600;
+}
+
+.nav__link--active .nav__link-icon {
+  color: var(--forest);
+}
+
+.nav__link--active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--gold);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Collapse / hamburger toggle */
+.nav-toggler-link svg {
+  color: var(--ink);
+}
+
+/* ===== Section labels — styled like ledger tabs, not generic uppercase grey ===== */
+.collections__group {
+  margin-bottom: 40px;
+}
+
+.collections__label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--ink);
+  margin-bottom: 16px;
+  padding-left: 2px;
+  position: relative;
+  display: inline-block;
+}
+
+.collections__label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 32px;
+  height: 2px;
+  background: var(--gold);
+}
+
+/* ===== Card grid ===== */
+.collections__card-list {
+  gap: 14px 16px;
+}
+
+/* ===== Cards — official record-card feel ===== */
+.card {
+  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--paper-card) !important;
+  box-shadow: 0 1px 2px rgba(27, 36, 32, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  min-height: unset !important;
+  padding: 0 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--forest) !important;
+  box-shadow: 0 10px 24px rgba(31, 77, 57, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf6 100%) !important;
+}
+
+/* Signature element: a folded gold "seal" corner that appears on hover,
+   like a wax stamp confirming the record — replaces the generic
+   gradient side-strip look. */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 22px 22px 0;
+  border-color: transparent var(--gold) transparent transparent;
+  opacity: 0;
+  transform: translate(6px, -6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.card__actions {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px !important;
+  min-height: unset !important;
+}
+
+.card__title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+  padding: 15px 18px;
+  padding-right: 0;
+}
+
+/* "+" add button */
+.card__actions .btn--icon-style-without-border {
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.card__actions .btn--icon-style-without-border:hover {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+/* ===== Primary buttons — solid forest, not a purple gradient ===== */
+.btn--style-primary {
+  background:  #C79A45 !important;
+  border: none !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(31, 77, 57, 0.25);
+}
+
+.btn--style-primary:hover {
+  background: #b68c3e!important;
+  box-shadow: 0 4px 12px rgba(31, 77, 57, 0.35);
+}
+
+.btn--style-secondary {
+  border-color: var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.btn--style-secondary:hover {
+  border-color: var(--gold) !important;
+  color: var(--forest-deep) !important;
+}
+
+/* ===== Collection list view (Donations, Users, etc.) ===== */
+
+.collection-list__title,
+.list-header__title,
+.collection-list h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.collection-list .btn--style-primary,
+.list-header .btn--style-primary,
+a[class*="create-new"],
+.btn--icon-position-left.btn--style-secondary {
+  background: var(--forest) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(31, 77, 57, 0.22);
+}
+
+.collection-list .btn--style-primary:hover,
+.list-header .btn--style-primary:hover,
+a[class*="create-new"]:hover {
+  background: var(--forest-deep) !important;
+}
+
+/* Description line under the title */
+.collection-list__sub-header,
+.list-header p,
+.collection-list p {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+/* Search input */
+.search-filter__input,
+input[type="search"],
+input[type="text"] {
+  font-family: var(--font-body);
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  background: var(--paper-card) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-filter__input:focus,
+input[type="search"]:focus,
+input[type="text"]:focus {
+  border-color: var(--forest) !important;
+  box-shadow: 0 0 0 3px var(--forest-soft) !important;
+  outline: none !important;
+}
+
+.search-filter svg {
+  color: var(--muted);
+}
+
+/* Columns / Filters pill buttons */
+.list-controls__buttons .btn,
+.list-controls .btn--style-pill,
+button[class*="toggle-columns"],
+button[class*="toggle-filters"] {
+  font-family: var(--font-body);
+  font-weight: 500;
+  border: 1px solid var(--line) !important;
+  background: var(--paper-card) !important;
+  border-radius: 20px !important;
+  color: var(--ink) !important;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.list-controls__buttons .btn:hover,
+button[class*="toggle-columns"]:hover,
+button[class*="toggle-filters"]:hover {
+  border-color: var(--forest) !important;
+  color: var(--forest-deep) !important;
+}
+
+/* ===== Table ===== */
+.table {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--paper-card);
+}
+
+.table table {
+  border-collapse: collapse;
+}
+
+.table thead tr,
+table thead tr {
+  background: var(--paper);
+}
+
+.table thead th,
+table thead th {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line) !important;
+  padding: 14px 16px !important;
+}
+
+.sort-column button,
+.sort-column__label {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.sort-column svg,
+th svg {
+  color: var(--gold);
+}
+
+.table tbody td,
+table tbody td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.table tbody tr:hover,
+table tbody tr:hover {
+  background: var(--forest-soft);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* Row title/link cells (Donor Name, etc.) */
+.table tbody td a,
+table tbody td a {
+  color: var(--forest-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.table tbody td a:hover,
+table tbody td a:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  accent-color: var(--forest);
+}
+
+/* ===== Pagination ===== */
+.paginator,
+.per-page {
+  font-family: var(--font-body);
+  color: var(--muted);
+}
+
+.paginator button,
+.clickable-arrow {
+  border-radius: 6px !important;
+  color: var(--ink) !important;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.paginator button:hover,
+.clickable-arrow:hover {
+  background: var(--forest-soft) !important;
+  color: var(--forest-deep) !important;
+}
+
+.paginator .paginator__page--active,
+.paginator button[aria-current="true"] {
+  background: var(--forest) !important;
+  color: #fff !important;
+}
+.gutter.dashboard {
+  padding-top: 40px;
+  padding-bottom: 48px;
+}
+
+.dashboard__label,
+.dashboard h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ===== Table / list views — utility data in mono for scannability ===== */
+.cell-id,
+.pill,
+td[class*="date"],
+td[class*="count"] {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+/* ===== Focus states (accessibility) ===== */
+a:focus-visible,
+button:focus-visible,
+.card:focus-within {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
+   DOCUMENT / EDIT VIEW — "the record itself"
+   Everything below styles a single entry (e.g. a Donation)
+   once it's open: the header strip, the two-column layout,
+   fields, the sidebar, and the consent checkboxes.
+   The idea: the main column is the ledger page, the sidebar
+   is a stamped card clipped to the margin of that page.
+   ============================================================ */
+
+/* ----- Doc header (breadcrumb + title + Edit/API + timestamps + Save) ----- */
+
+.doc-header,
+.collection-edit .doc-header {
+  background: var(--paper-card);
+  border-bottom: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.doc-header__title,
+.doc-header__title-title,
+.doc-header h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+/* "Edit" / "API" tab-pills at the top right of the doc header */
+.doc-tabs,
+.doc-header .pill-tabs,
+.doc-header__tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.doc-tabs__tab-button,
+.doc-header a[href*="/api"],
+.doc-header button[class*="tab"] {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 6px 14px;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.doc-tabs__tab-button:hover,
+.doc-header a[href*="/api"]:hover {
+  border-color: var(--gold);
+  color: var(--forest-deep);
+}
+
+.doc-tabs__tab-button--active {
+  background: var(--forest) !important;
+  border-color: var(--forest) !important;
+  color: #fff !important;
+}
+
+/* "Written by the donation API..." helper line under the title */
+.doc-header p,
+.doc-header__description {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* Last Modified / Created strip — reads like a registry stamp line */
+.doc-controls,
+.doc-controls__wrap {
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.doc-controls__list-item,
+.doc-controls .meta-label,
+[class*="last-modified"],
+[class*="created-at"] {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.doc-controls__list-item strong,
+[class*="last-modified"] strong,
+[class*="created-at"] strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Save button — reuse the forest primary, but give it a seal-like edge */
+.doc-controls .btn--style-primary,
+.form-submit .btn--style-primary {
+  border-radius: 6px !important;
+}
+
+/* Three-dot "more" menu trigger */
+.doc-controls button[aria-label="More options"],
+.popup-button svg {
+  color: var(--muted);
+}
+
+.popup-button:hover svg {
+  color: var(--forest-deep);
+}
+
+/* Dropdown popup panel (Duplicate / Delete / etc.) */
+.popup__content {
+  background: var(--paper-card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(27, 36, 32, 0.14) !important;
+  font-family: var(--font-body);
+}
+
+.popup-button-list__button:hover {
+  background: var(--forest-soft) !important;
+  color: var(--forest-deep) !important;
+}
+
+/* ----- Two-column document layout ----- */
+
+.collection-edit,
+.document-fields {
+  background: var(--paper);
+}
+
+.document-fields__main,
+.document-fields__edit {
+  background: transparent;
+}
+
+/* ----- Field labels & descriptions ----- */
+
+.field-label,
+label.field-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  margin-bottom: 6px;
+}
+
+/* Required-field asterisk in gold instead of default red — reads as
+   "attention" rather than "error" */
+.required {
+  color: var(--gold);
+  margin-left: 2px;
+}
+
+.field-description,
+.field-type .description {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 5px;
+}
+
+/* ----- Inputs / textareas / selects inside fields ----- */
+
+.field-type input[type="text"],
+.field-type input[type="number"],
+.field-type input[type="email"],
+.field-type textarea,
+textarea.textarea-input {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--paper-card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 7px !important;
+  padding: 10px 12px !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-type input[type="text"]:focus,
+.field-type input[type="number"]:focus,
+.field-type textarea:focus {
+  border-color: var(--forest) !important;
+  box-shadow: 0 0 0 3px var(--forest-soft) !important;
+  outline: none !important;
+}
+
+/* Disabled / read-only fields (Receipt Number, Receipt PDF URL) —
+   look like a printed field, not a broken input */
+.field-type input:disabled,
+.field-type input[readonly] {
+  background: var(--paper) !important;
+  color: var(--muted) !important;
+  border-style: dashed !important;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+/* React-Select (Currency, Frequency, Gateway, Internal Status, Campaign, Project) */
+.rs__control {
+  background: var(--paper-card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 7px !important;
+  min-height: 42px !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rs__control--is-focused {
+  border-color: var(--forest) !important;
+  box-shadow: 0 0 0 3px var(--forest-soft) !important;
+}
+
+.rs__value-container {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.rs__single-value {
+  color: var(--ink);
+}
+
+.rs__indicator svg {
+  color: var(--muted);
+}
+
+.rs__menu {
+  background: var(--paper-card) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 30px rgba(27, 36, 32, 0.14) !important;
+  overflow: hidden;
+}
+
+.rs__option {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+}
+
+.rs__option--is-focused {
+  background: var(--forest-soft) !important;
+  color: var(--forest-deep) !important;
+}
+
+.rs__option--is-selected {
+  background: var(--forest) !important;
+  color: #fff !important;
+}
+
+/* Clear "x" on select */
+.rs__clear-indicator svg:hover {
+  color: var(--gold);
+}
+
+/* Small "+" add-new button next to Campaign / Project relationship fields */
+.field-type .btn--icon-style-without-border {
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.field-type .btn--icon-style-without-border:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+/* ----- Field spacing — give each field breathing room, like line
+   items in a ledger rather than a cramped web form ----- */
+
+.render-fields > .field-type,
+.field-type {
+  margin-bottom: 22px;
+}
+
+.render-fields > .field-type + .field-type {
+  padding-top: 2px;
+}
+
+/* A quiet hairline every few fields reinforces the "ledger" feel
+   without boxing every single field individually */
+.field-type.checkbox {
+  margin-bottom: 14px;
+}
+
+/* ----- Consent / checkbox group ----- */
+
+.field-type.checkbox .checkbox-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-input__input,
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  accent-color: var(--forest);
+}
+
+.checkbox-input__label,
+.field-type.checkbox .field-label {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* Group heading like "Consent" above a set of checkboxes */
+.field-type.group > .field-label,
+.render-fields > h3,
+.collapsible__toggle-wrap h3 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--ink);
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.field-type.group > .field-label::before,
+.render-fields > h3::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--gold);
+}
+
+/* ----- Sidebar — Receipt Number / Receipt PDF URL panel -----
+   Treated as a stamped card clipped to the record, echoing the
+   folded gold corner used on collection cards. */
+
+.document-fields__sidebar-wrap {
+  padding-left: 4px;
+}
+
+.document-fields__sidebar {
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px 20px 22px;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(27, 36, 32, 0.04);
+}
+
+/* Folded gold corner, same signature as the collection cards, so the
+   sidebar reads as "the official portion" of the record */
+.document-fields__sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 20px 20px 0;
+  border-color: transparent var(--gold) transparent transparent;
+  border-radius: 0 10px 0 0;
+}
+
+.document-fields__sidebar .field-type {
+  margin-bottom: 20px;
+}
+
+.document-fields__sidebar .field-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ----- Tabs field (if donations ever grow tabbed sections) ----- */
+
+.tabs-field__tabs {
+  border-bottom: 1px solid var(--line);
+}
+
+.tabs-field__tab-button {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4b4b4b;              /* inactive tabs ab zyada readable, warm grey */
+  padding: 10px 4px;
+  margin-right: 24px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tabs-field__tab-button:hover {
+  color: #303030;
+}
+
+.tabs-field__tab-button--active {
+  color: var(--ink) !important;           /* active tab ab strong near-black, zyada punch */
+  font-weight: 700;
+  border-bottom-color: var(--gold) !important;
+  border-bottom-width: 3px !important;    /* underline thoda thicker taaki gold clearly dikhe */
+}
+
+/* ----- Sticky save / leave-without-saving banners ----- */
+
+.leave-without-saving__content,
+.step-nav-popup {
+  font-family: var(--font-body);
+}
+
+/* Toasts (Saved / Error) */
+.Toastify__toast {
+  font-family: var(--font-body) !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+}
+
+.Toastify__toast--success {
+  background: var(--forest-soft) !important;
+  color: var(--forest-deep) !important;
+  border-color: var(--forest) !important;
+}
+
+.Toastify__toast--error {
+  border-color: #B24B3E !important;
+}
+
+
+/* ============================================================
+   FIX — react-select's internal search input was inheriting
+   the generic ".field-type input[type=text]" white-background
+   rule and sitting on top of the selected value text, cutting
+   words like "Select a value" / "PayU" in half.
+   ============================================================ */
+
+.rs__value-container {
+  position: relative;
+}
+
+.rs__input-container {
+  background: transparent !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.rs__input-container input,
+.rs__input,
+.rs__value-container input[type="text"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--ink) !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+/* Belt-and-braces: the generic field input rule should never reach
+   into a react-select control at all */
+.rs__control input[type="text"] {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   POLISH — Save button + doc-controls "more" menu, senior-UI pass
+   ============================================================ */
+
+.doc-controls .btn--style-primary,
+.form-submit .btn--style-primary {
+  border-radius: 6px !important;
+  padding: 9px 22px !important;
+  font-size: 13.5px !important;
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.doc-controls .btn--style-primary:hover,
+.form-submit .btn--style-primary:hover {
+  transform: translateY(-1px);
+}
+
+.doc-controls .btn--style-primary:active,
+.form-submit .btn--style-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(31, 77, 57, 0.3) !important;
+}
+
+/* Three-dot "more options" button — square, quiet, gold on hover,
+   matching the folded-corner gold accent used elsewhere */
+.doc-controls button[aria-label="More options"],
+.popup-button.doc-controls__popup {
+  border: 1px solid var(--line) !important;
+  border-radius: 6px !important;
+  background: var(--paper-card) !important;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.doc-controls button[aria-label="More options"]:hover,
+.popup-button.doc-controls__popup:hover {
+  border-color: var(--gold) !important;
+  background: var(--gold-soft) !important;
+}
+
+.doc-controls button[aria-label="More options"]:hover svg {
+  color: var(--gold);
+}
+
+/* Hamburger / collapse-sidebar toggle in the doc-controls strip */
+.nav-toggler-link,
+button[aria-label="Toggle Nav"] {
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.nav-toggler-link:hover,
+button[aria-label="Toggle Nav"]:hover {
+  background: #b68c3e;
+}

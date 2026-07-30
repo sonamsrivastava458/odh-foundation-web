@@ -75,7 +75,7 @@ export type ReceiptPDFProps = {
 
 }
 
-export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
+export function ReceiptPDF({
   receiptNumber,
   date,
   donorName,
@@ -90,7 +90,8 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
   signatoryRole,
   statement80G,
   signatureImageBase64,
-}) => (
+}: ReceiptPDFProps): React.JSX.Element {
+    return (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
@@ -151,4 +152,6 @@ export const ReceiptPDF: React.FC<ReceiptPDFProps> = ({
       </View>
     </Page>
   </Document>
+    
 )
+}
