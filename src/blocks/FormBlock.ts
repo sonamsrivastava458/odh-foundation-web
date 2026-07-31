@@ -153,5 +153,21 @@ export const FormBlock: Block = {
       ],
     },
     { name: 'submitLabel', type: 'text', defaultValue: 'Submit' },
+    {
+  name: 'showResetButton',
+  type: 'checkbox',
+  label: 'Show Reset Button',
+  defaultValue: false,
+},
+
+{
+  name: 'resetLabel',
+  type: 'text',
+  defaultValue: 'Reset',
+  admin: {
+    condition: (_, siblingData) => siblingData?.showResetButton,
+  },
+}
+    
   ],
 }

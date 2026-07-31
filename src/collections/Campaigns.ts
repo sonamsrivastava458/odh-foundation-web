@@ -21,7 +21,16 @@ export const Campaigns: CollectionConfig = {
     { name: 'title', type: 'text', required: true },
     slugField('title'),
     { name: 'heroImage', type: 'upload', relationTo: 'media', required: true },
-    { name: 'excerpt', type: 'textarea', required: true, maxLength: 160 },
+     {
+      name: 'crumbs',
+      type: 'array',
+      labels: { singular: 'Crumb', plural: 'Crumbs' },
+      fields: [
+        { name: 'label', type: 'text', required: true },
+        { name: 'href', type: 'text' },
+      ],
+    },
+    { name: 'excerpt', type: 'textarea', maxLength: 160 },
     { name: 'body', type: 'richText' },
     {
       name: 'goalAmount',
@@ -72,6 +81,22 @@ export const Campaigns: CollectionConfig = {
       name: 'gallery',
       type: 'array',
       fields: [{ name: 'image', type: 'upload', relationTo: 'media', required: true }],
+    },
+       {
+      name: 'donateCTA',
+      type: 'group',
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          defaultValue: 'Donate Now',
+        },
+        {
+          name: 'link',
+          type: 'text',
+          defaultValue: '/donate',
+        },
+      ],
     },
     {
       name: 'featured',

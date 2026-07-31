@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { isEditor, readPublished } from '../access'
 import { slugField } from '../fields/slug'
 import { seoField } from '../fields/seo'
- 
+
 
 export const ProjectCategories: CollectionConfig = {
   slug: 'project-categories',
@@ -30,7 +30,7 @@ export const ProjectCategories: CollectionConfig = {
     {
       name: 'icon',
       type: 'upload',
-       relationTo: 'graphics',   // ← category icons chhote hote hain
+      relationTo: 'graphics',   // ← category icons chhote hote hain
 
     },
     {
@@ -39,9 +39,36 @@ export const ProjectCategories: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'crumbs',
+      type: 'array',
+      labels: { singular: 'Crumb', plural: 'Crumbs' },
+      fields: [
+        { name: 'label', type: 'text', required: true },
+        { name: 'href', type: 'text' },
+      ],
+    },
+    {
       // Category landing page ka SEO copy (doc §8.3: 150-300 words)
-      name: 'introText',
+
+      name: 'content',
       type: 'richText',
+
+    },
+    {
+      name: 'donateCTA',
+      type: 'group',
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          defaultValue: 'Donate Now',
+        },
+        {
+          name: 'link',
+          type: 'text',
+          defaultValue: '/donate',
+        },
+      ],
     },
     {
       name: 'order',
@@ -49,6 +76,6 @@ export const ProjectCategories: CollectionConfig = {
       defaultValue: 0,
       admin: { position: 'sidebar' },
     },
-     seoField(),
+    seoField(),
   ],
 }

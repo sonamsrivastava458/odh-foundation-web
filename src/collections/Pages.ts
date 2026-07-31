@@ -29,6 +29,10 @@ import { WhyODHFoundation } from '../blocks/WhyODHFoundation'
 import { OurCauses } from '../blocks/OurCauses'
 import { VolunteerCTA } from '../blocks/VolunteerCTA'
 import { AboutIntroSection } from '../blocks/AboutIntroSection'
+import { VisionMission } from '../blocks/VisionMission'
+import { FinalCtaBanner } from '../blocks/FinalCtaBanner'
+import { EventsAndCausesSection } from '../blocks/EventsAndCausesSection'
+import { ContactInformation } from '../blocks/ContactInformation'
 
 
 
@@ -89,6 +93,10 @@ export const Pages: CollectionConfig = {
   OurCauses,
   VolunteerCTA,
   AboutIntroSection,
+  VisionMission,
+  FinalCtaBanner,
+  EventsAndCausesSection,
+  ContactInformation,
 ],
 
     },

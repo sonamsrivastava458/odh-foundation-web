@@ -503,18 +503,14 @@ export interface Page {
               };
               [k: string]: unknown;
             };
+            showButton?: boolean | null;
+            buttonLabel?: string | null;
+            buttonPage?: (number | null) | Page;
             id?: string | null;
             blockName?: string | null;
             blockType: 'richText';
           }
-        | {
-            heading?: string | null;
-            subheading?: string | null;
-            items?: (number | TeamMember)[] | null;
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'teamGrid';
-          }
+        | TeamGridBlock
         | {
             heading?: string | null;
             milestones: {
@@ -585,6 +581,8 @@ export interface Page {
               id?: string | null;
             }[];
             submitLabel?: string | null;
+            showResetButton?: boolean | null;
+            resetLabel?: string | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'formBlock';
@@ -749,6 +747,44 @@ export interface Page {
             blockName?: string | null;
             blockType: 'aboutIntroSection';
           }
+        | VisionMissionBlock
+        | {
+            backgroundImage: number | Media;
+            heading: string;
+            buttonLabel: string;
+            buttonHref: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'finalctabanner';
+          }
+        | {
+            eventsHeading: string;
+            events?:
+              | {
+                  image: number | Media;
+                  title: string;
+                  date: string;
+                  location?: string | null;
+                  readMoreLabel?: string | null;
+                  readMoreLink?: (number | null) | Page;
+                  id?: string | null;
+                }[]
+              | null;
+            causesHeading: string;
+            causes?:
+              | {
+                  image: number | Media;
+                  title: string;
+                  buttonLabel: string;
+                  buttonHref: string;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'eventsAndCausesSection';
+          }
+        | ContactInformationBlock
       )[]
     | null;
   seo?: {
@@ -790,7 +826,14 @@ export interface ProjectCategory {
   slug: string;
   icon?: (number | null) | Graphic;
   heroImage?: (number | null) | Media;
-  introText?: {
+  crumbs?:
+    | {
+        label: string;
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  content?: {
     root: {
       type: string;
       children: {
@@ -805,6 +848,10 @@ export interface ProjectCategory {
     };
     [k: string]: unknown;
   } | null;
+  donateCTA?: {
+    label?: string | null;
+    link?: string | null;
+  };
   order?: number | null;
   seo?: {
     /**
@@ -844,7 +891,14 @@ export interface Campaign {
    */
   slug: string;
   heroImage: number | Media;
-  excerpt: string;
+  crumbs?:
+    | {
+        label: string;
+        href?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  excerpt?: string | null;
   body?: {
     root: {
       type: string;
@@ -888,6 +942,10 @@ export interface Campaign {
         id?: string | null;
       }[]
     | null;
+  donateCTA?: {
+    label?: string | null;
+    link?: string | null;
+  };
   /**
    * Featured campaigns appear on the homepage.
    */
@@ -1120,6 +1178,45 @@ export interface TeamMember {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TeamGridBlock".
+ */
+export interface TeamGridBlock {
+  heading?: string | null;
+  subheading?: string | null;
+  showFoundersFirst?: boolean | null;
+  items?: (number | TeamMember)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'teamGrid';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VisionMissionBlock".
+ */
+export interface VisionMissionBlock {
+  vision: {
+    heading: string;
+    description: string;
+  };
+  mission: {
+    heading: string;
+    description: string;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'visionMission';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInformationBlock".
+ */
+export interface ContactInformationBlock {
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'contactInformation';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1774,18 +1871,13 @@ export interface PagesSelect<T extends boolean = true> {
               eyebrow?: T;
               heading?: T;
               content?: T;
+              showButton?: T;
+              buttonLabel?: T;
+              buttonPage?: T;
               id?: T;
               blockName?: T;
             };
-        teamGrid?:
-          | T
-          | {
-              heading?: T;
-              subheading?: T;
-              items?: T;
-              id?: T;
-              blockName?: T;
-            };
+        teamGrid?: T | TeamGridBlockSelect<T>;
         timeline?:
           | T
           | {
@@ -1845,6 +1937,8 @@ export interface PagesSelect<T extends boolean = true> {
                     id?: T;
                   };
               submitLabel?: T;
+              showResetButton?: T;
+              resetLabel?: T;
               id?: T;
               blockName?: T;
             };
@@ -2018,6 +2112,46 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        visionMission?: T | VisionMissionBlockSelect<T>;
+        finalctabanner?:
+          | T
+          | {
+              backgroundImage?: T;
+              heading?: T;
+              buttonLabel?: T;
+              buttonHref?: T;
+              id?: T;
+              blockName?: T;
+            };
+        eventsAndCausesSection?:
+          | T
+          | {
+              eventsHeading?: T;
+              events?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    date?: T;
+                    location?: T;
+                    readMoreLabel?: T;
+                    readMoreLink?: T;
+                    id?: T;
+                  };
+              causesHeading?: T;
+              causes?:
+                | T
+                | {
+                    image?: T;
+                    title?: T;
+                    buttonLabel?: T;
+                    buttonHref?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        contactInformation?: T | ContactInformationBlockSelect<T>;
       };
   seo?:
     | T
@@ -2034,6 +2168,46 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TeamGridBlock_select".
+ */
+export interface TeamGridBlockSelect<T extends boolean = true> {
+  heading?: T;
+  subheading?: T;
+  showFoundersFirst?: T;
+  items?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "VisionMissionBlock_select".
+ */
+export interface VisionMissionBlockSelect<T extends boolean = true> {
+  vision?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+      };
+  mission?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ContactInformationBlock_select".
+ */
+export interface ContactInformationBlockSelect<T extends boolean = true> {
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "project-categories_select".
  */
 export interface ProjectCategoriesSelect<T extends boolean = true> {
@@ -2041,7 +2215,20 @@ export interface ProjectCategoriesSelect<T extends boolean = true> {
   slug?: T;
   icon?: T;
   heroImage?: T;
-  introText?: T;
+  crumbs?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  content?: T;
+  donateCTA?:
+    | T
+    | {
+        label?: T;
+        link?: T;
+      };
   order?: T;
   seo?:
     | T
@@ -2152,6 +2339,13 @@ export interface CampaignsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   heroImage?: T;
+  crumbs?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
   excerpt?: T;
   body?: T;
   goalAmount?: T;
@@ -2169,6 +2363,12 @@ export interface CampaignsSelect<T extends boolean = true> {
     | {
         image?: T;
         id?: T;
+      };
+  donateCTA?:
+    | T
+    | {
+        label?: T;
+        link?: T;
       };
   featured?: T;
   active?: T;
@@ -2395,7 +2595,7 @@ export interface SiteSetting {
   };
   contact: {
     /**
-     * Registered office address displayed on the footer and contact page.
+     * Legacy footer address. Keep this until the footer is migrated to use Registered Office.
      */
     address: string;
     /**
@@ -2426,6 +2626,18 @@ export interface SiteSetting {
      * Short text displayed below the QR code.
      */
     qrCaption?: string | null;
+    registeredOffice?: {
+      title?: string | null;
+      organization?: string | null;
+      address?: string | null;
+    };
+    headOffice?: {
+      title?: string | null;
+      organization?: string | null;
+      address?: string | null;
+    };
+    whatsapp?: string | null;
+    emailDescription?: string | null;
   };
   /**
    * Official organisation registration numbers displayed across the website.
@@ -2637,6 +2849,22 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         mapUrl?: T;
         qrCode?: T;
         qrCaption?: T;
+        registeredOffice?:
+          | T
+          | {
+              title?: T;
+              organization?: T;
+              address?: T;
+            };
+        headOffice?:
+          | T
+          | {
+              title?: T;
+              organization?: T;
+              address?: T;
+            };
+        whatsapp?: T;
+        emailDescription?: T;
       };
   registrations?:
     | T

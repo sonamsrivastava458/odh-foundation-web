@@ -18,93 +18,93 @@ export const SiteSettings: GlobalConfig = {
       type: 'tabs',
       tabs: [
         // ---------- Brand ----------
-    // ---------- Brand ----------
-{
-  label: 'Brand',
-  fields: [
-    {
-      name: 'siteName',
-      type: 'text',
-      required: true,
-      defaultValue: 'ODH Foundation',
-    },
-
-    {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'graphics',
-      required: true,
-      admin: {
-        description: 'Shown in the website header.',
-      },
-    },
-
-    {
-      name: 'logoLight',
-      type: 'upload',
-      relationTo: 'graphics',
-      admin: {
-        description: 'Shown in the footer on dark backgrounds.',
-      },
-    },
-
-    {
-      name: 'favicon',
-      type: 'upload',
-      relationTo: 'graphics',
-      admin: {
-        description: 'Browser tab icon.',
-      },
-    },
-
-    {
-      name: 'defaultOgImage',
-      type: 'upload',
-      relationTo: 'media',
-      label: 'Default Social Share Image',
-      admin: {
-        description:
-          'Used when a page does not have its own Open Graph image.',
-      },
-    },
-
-    // ---------------- Newsletter ----------------
-
-    {
-      name: 'newsletter',
-      type: 'group',
-      label: 'Newsletter Section',
-      fields: [
+        // ---------- Brand ----------
         {
-          name: 'heading',
-          type: 'text',
-          required: true,
-          defaultValue: 'Sign Up For Latest Updates',
-        },
+          label: 'Brand',
+          fields: [
+            {
+              name: 'siteName',
+              type: 'text',
+              required: true,
+              defaultValue: 'ODH Foundation',
+            },
 
-        {
-          name: 'description',
-          type: 'textarea',
-          required: true,
-          defaultValue:
-            'To keep yourself updated on latest news and programs at ODH Foundation, drop in your E-mail ID',
-        },
+            {
+              name: 'logo',
+              type: 'upload',
+              relationTo: 'graphics',
+              required: true,
+              admin: {
+                description: 'Shown in the website header.',
+              },
+            },
 
-        {
-          name: 'placeholder',
-          type: 'text',
-          defaultValue: 'Your Email',
-        },
+            {
+              name: 'logoLight',
+              type: 'upload',
+              relationTo: 'graphics',
+              admin: {
+                description: 'Shown in the footer on dark backgrounds.',
+              },
+            },
 
-        {
-          name: 'buttonLabel',
-          type: 'text',
-          defaultValue: 'Subscribe',
+            {
+              name: 'favicon',
+              type: 'upload',
+              relationTo: 'graphics',
+              admin: {
+                description: 'Browser tab icon.',
+              },
+            },
+
+            {
+              name: 'defaultOgImage',
+              type: 'upload',
+              relationTo: 'media',
+              label: 'Default Social Share Image',
+              admin: {
+                description:
+                  'Used when a page does not have its own Open Graph image.',
+              },
+            },
+
+            // ---------------- Newsletter ----------------
+
+            {
+              name: 'newsletter',
+              type: 'group',
+              label: 'Newsletter Section',
+              fields: [
+                {
+                  name: 'heading',
+                  type: 'text',
+                  required: true,
+                  defaultValue: 'Sign Up For Latest Updates',
+                },
+
+                {
+                  name: 'description',
+                  type: 'textarea',
+                  required: true,
+                  defaultValue:
+                    'To keep yourself updated on latest news and programs at ODH Foundation, drop in your E-mail ID',
+                },
+
+                {
+                  name: 'placeholder',
+                  type: 'text',
+                  defaultValue: 'Your Email',
+                },
+
+                {
+                  name: 'buttonLabel',
+                  type: 'text',
+                  defaultValue: 'Subscribe',
+                },
+              ],
+            },
+          ],
         },
-      ],
-    },
-  ],
-},
 
         // ---------- Contact ----------
         {
@@ -121,7 +121,7 @@ export const SiteSettings: GlobalConfig = {
                   required: true,
                   admin: {
                     description:
-                      'Registered office address displayed on the footer and contact page.',
+                    'Legacy footer address. Keep this until the footer is migrated to use Registered Office.',
                     custom: {
                       multiline: true,
                     },
@@ -201,6 +201,71 @@ export const SiteSettings: GlobalConfig = {
                       'Short text displayed below the QR code.',
                   },
                 },
+                {
+                  name: 'registeredOffice',
+                  label: 'Registered Office',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'title',
+                      type: 'text',
+                      defaultValue: 'Registered Office',
+                    },
+                    {
+                      name: 'organization',
+                      type: 'text',
+                      defaultValue: 'ODH Foundation',
+                    },
+                    {
+                      name: 'address',
+                      type: 'textarea',
+                      admin: {
+                        custom: {
+                          multiline: true,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  name: 'headOffice',
+                  label: 'Head Office',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'title',
+                      type: 'text',
+                      defaultValue: 'Head Office',
+                    },
+                    {
+                      name: 'organization',
+                      type: 'text',
+                      defaultValue: 'ODH Foundation',
+                    },
+                    {
+                      name: 'address',
+                      type: 'textarea',
+                      admin: {
+                        custom: {
+                          multiline: true,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  name: 'whatsapp',
+                  label: 'WhatsApp Number',
+                  type: 'text',
+                  validate: validatePhone,
+                },
+                {
+                  name: 'emailDescription',
+                  type: 'textarea',
+                  defaultValue:
+                    'For any enquiries or information, drop in a mail to',
+                }
+
               ],
             },
           ],
