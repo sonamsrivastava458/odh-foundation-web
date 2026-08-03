@@ -1,6 +1,7 @@
 import type { Block, Validate } from 'payload'
 import { validateFieldKey, validateSlugValue } from '../fields/validators'
 
+
 /**
  * Row-level rule (spec-equivalent of Navigation's headerItemsAreComplete /
  * donation-settings' onlyOneHighlight): `admin.condition` hides `options` in
@@ -37,6 +38,9 @@ export const FormBlock: Block = {
     singular: 'Form',
     plural: 'Forms',
   },
+
+
+
   fields: [
     { name: 'heading', type: 'text' },
     { name: 'subheading', type: 'textarea' },
@@ -81,10 +85,38 @@ export const FormBlock: Block = {
             { label: 'Phone', value: 'tel' },
             { label: 'Textarea', value: 'textarea' },
             { label: 'Select (dropdown)', value: 'select' },
+            { label: 'Date', value: 'date' },
+            { label: 'File Upload', value: 'file' },
+
           ],
         },
+        {
+          name: 'accept',
+          type: 'text',
+          defaultValue: 'image/*',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'file',
+            description: 'Allowed file types, e.g. image/*,.pdf',
+          },
+        },
+        {
+          name: 'maxFileSizeMB',
+          type: 'number',
+          defaultValue: 5,
+          min: 1,
+          admin: {
+            condition: (_, siblingData) => siblingData?.type === 'file',
+            description: 'Maximum file size in MB.',
+          },
+        },
         { name: 'required', type: 'checkbox', defaultValue: false },
-        { name: 'placeholder', type: 'text' },
+        {
+          name: 'placeholder',
+          type: 'text',
+          admin: {
+            condition: (_, siblingData) => siblingData?.type !== 'file',
+          },
+        },
         {
           name: 'helpText',
           type: 'text',
@@ -121,13 +153,16 @@ export const FormBlock: Block = {
           name: 'minLength',
           type: 'number',
           min: 0,
-          admin: { condition: (_, siblingData) => siblingData?.type !== 'select' },
+          admin: {
+            condition: (_, siblingData) => siblingData?.type !== 'select' && siblingData?.type !== 'file' &&
+              siblingData?.type !== 'date'
+          },
         },
         {
           name: 'maxLength',
           type: 'number',
           min: 0,
-          admin: { condition: (_, siblingData) => siblingData?.type !== 'select' },
+          admin: { condition: (_, siblingData) => siblingData?.type !== 'select' && siblingData?.type !== 'file' && siblingData?.type !== 'date' },
         },
         {
           name: 'options',
@@ -154,20 +189,20 @@ export const FormBlock: Block = {
     },
     { name: 'submitLabel', type: 'text', defaultValue: 'Submit' },
     {
-  name: 'showResetButton',
-  type: 'checkbox',
-  label: 'Show Reset Button',
-  defaultValue: false,
-},
+      name: 'showResetButton',
+      type: 'checkbox',
+      label: 'Show Reset Button',
+      defaultValue: false,
+    },
 
-{
-  name: 'resetLabel',
-  type: 'text',
-  defaultValue: 'Reset',
-  admin: {
-    condition: (_, siblingData) => siblingData?.showResetButton,
-  },
-}
-    
+    {
+      name: 'resetLabel',
+      type: 'text',
+      defaultValue: 'Reset',
+      admin: {
+        condition: (_, siblingData) => siblingData?.showResetButton,
+      },
+    }
+
   ],
 }

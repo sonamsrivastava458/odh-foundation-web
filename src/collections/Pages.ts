@@ -24,7 +24,7 @@ import { ImageGallery } from '../blocks/ImageGallery'
 import { VideoEmbed } from '../blocks/VideoEmbed'
 import { MapContact } from '../blocks/MapContact'
 import { FeatureCards } from '../blocks/FeatureCards'
-import{ HomeIntroSection } from '../blocks/HomeIntroSection'
+import { HomeIntroSection } from '../blocks/HomeIntroSection'
 import { WhyODHFoundation } from '../blocks/WhyODHFoundation'
 import { OurCauses } from '../blocks/OurCauses'
 import { VolunteerCTA } from '../blocks/VolunteerCTA'
@@ -33,10 +33,12 @@ import { VisionMission } from '../blocks/VisionMission'
 import { FinalCtaBanner } from '../blocks/FinalCtaBanner'
 import { EventsAndCausesSection } from '../blocks/EventsAndCausesSection'
 import { ContactInformation } from '../blocks/ContactInformation'
+import {FAQContactCTA} from "../blocks/FAQContactCTA";
 
 
 
 import { populateBlocks } from '../hooks/populateBlocks'
+import { clearHiddenFormFields } from '../hooks/clearHiddenFormFields'
 
 
 
@@ -57,6 +59,7 @@ export const Pages: CollectionConfig = {
     // Reference blocks (featuredProjects, categoryGrid, …) ka data collections se
     // laakar block.items me bhar deta hai
     afterRead: [populateBlocks],
+    beforeChange: [clearHiddenFormFields],
   },
   versions: { drafts: true },
   fields: [
@@ -66,38 +69,39 @@ export const Pages: CollectionConfig = {
       name: 'layout',
       type: 'blocks',
       minRows: 1,
-     blocks: [
-  Hero,
-  PageHeader,
-  StatsBar,
-  AboutStrip,
-  CategoryGrid,
-  FeaturedCampaigns,
-  FeaturedProjects,
-  HowYouCanHelp,
-  TestimonialCarousel,
-  MediaGrid,
-  TrustStrip,
-  CTABand,
-  RichText,
-  TeamGrid,
-  Timeline,
-  FAQAccordion,
-  FormBlock,
-  ImageGallery,
-  VideoEmbed,
-  MapContact,
-  FeatureCards,
-  HomeIntroSection,
-  WhyODHFoundation,
-  OurCauses,
-  VolunteerCTA,
-  AboutIntroSection,
-  VisionMission,
-  FinalCtaBanner,
-  EventsAndCausesSection,
-  ContactInformation,
-],
+      blocks: [
+        Hero,
+        PageHeader,
+        StatsBar,
+        AboutStrip,
+        CategoryGrid,
+        FeaturedCampaigns,
+        FeaturedProjects,
+        HowYouCanHelp,
+        TestimonialCarousel,
+        MediaGrid,
+        TrustStrip,
+        CTABand,
+        RichText,
+        TeamGrid,
+        Timeline,
+        FAQAccordion,
+        FormBlock,
+        ImageGallery,
+        VideoEmbed,
+        MapContact,
+        FeatureCards,
+        HomeIntroSection,
+        WhyODHFoundation,
+        OurCauses,
+        VolunteerCTA,
+        AboutIntroSection,
+        VisionMission,
+        FinalCtaBanner,
+        EventsAndCausesSection,
+        ContactInformation,
+        FAQContactCTA,
+      ],
 
     },
     seoField(),

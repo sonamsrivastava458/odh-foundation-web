@@ -527,7 +527,22 @@ export interface Page {
             heading?: string | null;
             faqs: {
               question: string;
-              answer: string;
+              answer: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              };
+              defaultOpen?: boolean | null;
               id?: string | null;
             }[];
             id?: string | null;
@@ -547,7 +562,15 @@ export interface Page {
                */
               name: string;
               label: string;
-              type: 'text' | 'email' | 'tel' | 'textarea' | 'select';
+              type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'date' | 'file';
+              /**
+               * Allowed file types, e.g. image/*,.pdf
+               */
+              accept?: string | null;
+              /**
+               * Maximum file size in MB.
+               */
+              maxFileSizeMB?: number | null;
               required?: boolean | null;
               placeholder?: string | null;
               /**
@@ -785,6 +808,14 @@ export interface Page {
             blockType: 'eventsAndCausesSection';
           }
         | ContactInformationBlock
+        | {
+            heading: string;
+            description?: string | null;
+            backgroundImage?: (number | null) | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faqContactCTA';
+          }
       )[]
     | null;
   seo?: {
@@ -1382,6 +1413,19 @@ export interface FormSubmission {
     | number
     | boolean
     | null;
+  /**
+   * Files uploaded with this submission. Each item links to the Media library.
+   */
+  files?:
+    | {
+        /**
+         * The FormBlock field name that uploaded this file.
+         */
+        fieldName: string;
+        file: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   status: 'new' | 'read' | 'archived';
   updatedAt: string;
   createdAt: string;
@@ -1902,6 +1946,7 @@ export interface PagesSelect<T extends boolean = true> {
                 | {
                     question?: T;
                     answer?: T;
+                    defaultOpen?: T;
                     id?: T;
                   };
               id?: T;
@@ -1919,6 +1964,8 @@ export interface PagesSelect<T extends boolean = true> {
                     name?: T;
                     label?: T;
                     type?: T;
+                    accept?: T;
+                    maxFileSizeMB?: T;
                     required?: T;
                     placeholder?: T;
                     helpText?: T;
@@ -2152,6 +2199,15 @@ export interface PagesSelect<T extends boolean = true> {
               blockName?: T;
             };
         contactInformation?: T | ContactInformationBlockSelect<T>;
+        faqContactCTA?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              backgroundImage?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   seo?:
     | T
@@ -2507,6 +2563,13 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
   page?: T;
   blockId?: T;
   data?: T;
+  files?:
+    | T
+    | {
+        fieldName?: T;
+        file?: T;
+        id?: T;
+      };
   status?: T;
   updatedAt?: T;
   createdAt?: T;

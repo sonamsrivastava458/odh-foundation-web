@@ -48,6 +48,33 @@ export const FormSubmissions: CollectionConfig = {
       admin: { description: "The submitted field values, keyed by each field's Name." },
     },
     {
+      name: 'files',
+      label: 'Uploaded Files',
+      type: 'array',
+      admin: {
+        description:
+          'Files uploaded with this submission. Each item links to the Media library.',
+      },
+      fields: [
+        {
+          name: 'fieldName',
+          type: 'text',
+          required: true,
+          admin: {
+            readOnly: true,
+            description:
+              'The FormBlock field name that uploaded this file.',
+          },
+        },
+        {
+          name: 'file',
+          type: 'relationship',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
+    {
       name: 'status',
       type: 'select',
       required: true,
