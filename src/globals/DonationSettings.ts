@@ -13,131 +13,84 @@ const onlyOneHighlight: Validate = (value) => {
   }
   return true
 }
-
-
-
 export const DonationSettings: GlobalConfig = {
   slug: 'donation-settings',
   label: 'Donation Settings',
+
   admin: {
     group: 'Settings',
-    description: 'Preset amounts, impact cards, receipts and the payment gateway mode.',
+    description:
+      'Global donation configuration such as payment gateway, receipts and recurring donation settings.',
   },
+
   access: {
     read: isPublic,
     update: isSuperAdmin,
   },
+
   fields: [
     {
       type: 'tabs',
       tabs: [
+        // ---------------- General ----------------
         {
-          label: 'Amounts',
+          label: 'General',
           fields: [
-            {
-              name: 'presetAmounts',
-              type: 'array',
-              label: 'Suggested Amounts (₹)',
-              required: true,
-              minRows: 2,
-              maxRows: 6,
-                validate: onlyOneHighlight,     
-
-              admin: {
-                description: 'Shown as buttons on the donate page, in this order.',
-              },
-              fields: [
-                { name: 'amount', type: 'number', required: true, min: 100 },
-                {
-                  name: 'highlight',
-                  type: 'checkbox',
-                  label: 'Mark as “most popular”',
-                  defaultValue: false,
-                },
-              ],
-            },
             {
               name: 'minAmount',
               type: 'number',
-              label: 'Minimum Donation (₹)',
+              label: 'Global Minimum Donation (₹)',
               required: true,
               defaultValue: 100,
-              min: 100,
-              admin: {
-                description: 'Donations below this amount are rejected by the server.',
-              },
-            },
-            {
-              name: 'allowMonthly',
-              type: 'checkbox',
-              label: 'Allow monthly (recurring) donations',
-              defaultValue: true,
-            },
-          ],
-        },
-
-        {
-          label: 'Impact Cards',
-          fields: [
-            {
-              name: 'impactCards',
-              type: 'array',
-              label: false,
-              maxRows: 4,
+              min: 1,
               admin: {
                 description:
-                  'Shown beside the donation form, for example “₹500 = a school kit for one child”.',
+                  'Donations below this amount are rejected for all campaigns.',
               },
-              fields: [
-                { name: 'amount', type: 'number', required: true, min: 1 },
-                {
-                  name: 'description',
-                  type: 'text',
-                  required: true,
-                  admin: { description: 'What this amount pays for.' },
-                },
-                { name: 'icon', type: 'upload', relationTo: 'graphics' },
-              ],
             },
+
+            // {
+            //   name: 'allowMonthly',
+            //   type: 'checkbox',
+            //   label: 'Allow Monthly Donations',
+            //   defaultValue: true,
+            // },
           ],
         },
 
+        // ---------------- Receipt ----------------
         {
           label: 'Receipt',
           fields: [
             {
               name: 'receipt',
               type: 'group',
-              label: false,
               fields: [
                 {
                   name: 'signatoryName',
                   type: 'text',
                   required: true,
-                  admin: { description: 'Name printed on the 80G receipt.' },
                 },
-                { name: 'signatoryRole', type: 'text' },
+                {
+                  name: 'signatoryRole',
+                  type: 'text',
+                },
                 {
                   name: 'signatureImage',
                   type: 'upload',
                   relationTo: 'graphics',
-                  admin: { description: 'Scanned signature, transparent PNG.' },
                 },
                 {
                   name: 'statement80G',
                   type: 'textarea',
-                  label: '80G Statement',
                   required: true,
-                  admin: {
-                    description:
-                      'Legal text printed on every receipt, quoting the 80G registration.',
-                  },
                 },
               ],
             },
           ],
         },
 
+        // ---------------- Payment Gateway ----------------
         {
           label: 'Gateway',
           fields: [
@@ -147,33 +100,32 @@ export const DonationSettings: GlobalConfig = {
               required: true,
               defaultValue: 'test',
               options: [
-                { label: 'Test — no real money moves', value: 'test' },
-                { label: 'Live — real donations are charged', value: 'live' },
+                {
+                  label: 'Test',
+                  value: 'test',
+                },
+                {
+                  label: 'Live',
+                  value: 'live',
+                },
               ],
-              admin: {
-                description:
-                  'Switch to Live only after the full test checklist has passed. In Live mode every donation charges a real card.',
-              },
             },
+
             {
               name: 'gateway',
               type: 'select',
               required: true,
               defaultValue: 'payu',
               options: [
-                { label: 'PayU', value: 'payu' },
-                { label: 'Razorpay', value: 'razorpay' },
+                {
+                  label: 'PayU',
+                  value: 'payu',
+                },
+                {
+                  label: 'Razorpay',
+                  value: 'razorpay',
+                },
               ],
-              admin: {
-                description: 'Which payment provider handles checkout.',
-              },
-            },
-            {
-              name: 'upiQr',
-              type: 'upload',
-              relationTo: 'graphics',
-              label: 'UPI QR Code',
-              admin: { description: 'For donors who prefer to transfer directly.' },
             },
           ],
         },

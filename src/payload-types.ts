@@ -816,6 +816,37 @@ export interface Page {
             blockName?: string | null;
             blockType: 'faqContactCTA';
           }
+        | {
+            formHeading?: string | null;
+            campaignLabel?: string | null;
+            amountLabel?: string | null;
+            customAmountPlaceholder?: string | null;
+            submitButtonLabel?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'donationLayout';
+          }
+        | {
+            heading?: string | null;
+            subHeading?: string | null;
+            mobileTabLabel?: string | null;
+            mobilePlaceholder?: string | null;
+            emailTabLabel?: string | null;
+            emailPlaceholder?: string | null;
+            otpButtonLabel?: string | null;
+            passwordButtonLabel?: string | null;
+            passwordPlaceholder?: string | null;
+            whatsappLabel?: string | null;
+            showWhatsappCheckbox?: boolean | null;
+            loginButtonLabel?: string | null;
+            termsText?: string | null;
+            termsPage?: (number | null) | Page;
+            privacyPage?: (number | null) | Page;
+            footerText?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'loginForm';
+          }
       )[]
     | null;
   seo?: {
@@ -957,6 +988,21 @@ export interface Campaign {
    * Displays the amount raised against the goal on the campaign page.
    */
   showProgress?: boolean | null;
+  donation?: {
+    enabled?: boolean | null;
+    allowCustomAmount?: boolean | null;
+    presetAmounts?:
+      | {
+          amount: number;
+          /**
+           * Text shown below the amount when this amount is selected.
+           */
+          impactText: string;
+          highlight?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
   /**
    * Shown as an accordion, and published as FAQ structured data for Google.
    */
@@ -2208,6 +2254,39 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
+        donationLayout?:
+          | T
+          | {
+              formHeading?: T;
+              campaignLabel?: T;
+              amountLabel?: T;
+              customAmountPlaceholder?: T;
+              submitButtonLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        loginForm?:
+          | T
+          | {
+              heading?: T;
+              subHeading?: T;
+              mobileTabLabel?: T;
+              mobilePlaceholder?: T;
+              emailTabLabel?: T;
+              emailPlaceholder?: T;
+              otpButtonLabel?: T;
+              passwordButtonLabel?: T;
+              passwordPlaceholder?: T;
+              whatsappLabel?: T;
+              showWhatsappCheckbox?: T;
+              loginButtonLabel?: T;
+              termsText?: T;
+              termsPage?: T;
+              privacyPage?: T;
+              footerText?: T;
+              id?: T;
+              blockName?: T;
+            };
       };
   seo?:
     | T
@@ -2407,6 +2486,20 @@ export interface CampaignsSelect<T extends boolean = true> {
   goalAmount?: T;
   raisedAmount?: T;
   showProgress?: T;
+  donation?:
+    | T
+    | {
+        enabled?: T;
+        allowCustomAmount?: T;
+        presetAmounts?:
+          | T
+          | {
+              amount?: T;
+              impactText?: T;
+              highlight?: T;
+              id?: T;
+            };
+      };
   faqs?:
     | T
     | {
@@ -2755,6 +2848,39 @@ export interface SiteSetting {
       | null;
   };
   /**
+   * Direct bank transfer details shown on the Donate / Contact page.
+   */
+  bankDetails?: {
+    heading?: string | null;
+    subHeading?: string | null;
+    /**
+     * Add one entry per bank account (e.g. ICICI Bank, Punjab National Bank).
+     */
+    accounts?:
+      | {
+          /**
+           * Bank logo shown above the account details table.
+           */
+          bankLogo?: (number | null) | Graphic;
+          /**
+           * Example: ICICI Bank
+           */
+          bankName?: string | null;
+          beneficiaryAccountName: string;
+          accountNumber: string;
+          accountType: 'current' | 'savings';
+          ifscCode: string;
+          id?: string | null;
+        }[]
+      | null;
+    qr?: {
+      heading?: string | null;
+      qrImage?: (number | null) | Graphic;
+      organizationName?: string | null;
+      instructions?: string | null;
+    };
+  };
+  /**
    * For example: G-XXXXXXXXXX
    */
   ga4Id?: string | null;
@@ -2819,7 +2945,7 @@ export interface Navigation {
   createdAt?: string | null;
 }
 /**
- * Preset amounts, impact cards, receipts and the payment gateway mode.
+ * Global donation configuration such as payment gateway, receipts and recurring donation settings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "donation-settings".
@@ -2827,59 +2953,17 @@ export interface Navigation {
 export interface DonationSetting {
   id: number;
   /**
-   * Shown as buttons on the donate page, in this order.
-   */
-  presetAmounts: {
-    amount: number;
-    highlight?: boolean | null;
-    id?: string | null;
-  }[];
-  /**
-   * Donations below this amount are rejected by the server.
+   * Donations below this amount are rejected for all campaigns.
    */
   minAmount: number;
-  allowMonthly?: boolean | null;
-  /**
-   * Shown beside the donation form, for example “₹500 = a school kit for one child”.
-   */
-  impactCards?:
-    | {
-        amount: number;
-        /**
-         * What this amount pays for.
-         */
-        description: string;
-        icon?: (number | null) | Graphic;
-        id?: string | null;
-      }[]
-    | null;
   receipt: {
-    /**
-     * Name printed on the 80G receipt.
-     */
     signatoryName: string;
     signatoryRole?: string | null;
-    /**
-     * Scanned signature, transparent PNG.
-     */
     signatureImage?: (number | null) | Graphic;
-    /**
-     * Legal text printed on every receipt, quoting the 80G registration.
-     */
     statement80G: string;
   };
-  /**
-   * Switch to Live only after the full test checklist has passed. In Live mode every donation charges a real card.
-   */
   gatewayMode: 'test' | 'live';
-  /**
-   * Which payment provider handles checkout.
-   */
   gateway: 'payu' | 'razorpay';
-  /**
-   * For donors who prefer to transfer directly.
-   */
-  upiQr?: (number | null) | Graphic;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2964,6 +3048,31 @@ export interface SiteSettingsSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  bankDetails?:
+    | T
+    | {
+        heading?: T;
+        subHeading?: T;
+        accounts?:
+          | T
+          | {
+              bankLogo?: T;
+              bankName?: T;
+              beneficiaryAccountName?: T;
+              accountNumber?: T;
+              accountType?: T;
+              ifscCode?: T;
+              id?: T;
+            };
+        qr?:
+          | T
+          | {
+              heading?: T;
+              qrImage?: T;
+              organizationName?: T;
+              instructions?: T;
+            };
+      };
   ga4Id?: T;
   clarityId?: T;
   updatedAt?: T;
@@ -3013,23 +3122,7 @@ export interface NavigationSelect<T extends boolean = true> {
  * via the `definition` "donation-settings_select".
  */
 export interface DonationSettingsSelect<T extends boolean = true> {
-  presetAmounts?:
-    | T
-    | {
-        amount?: T;
-        highlight?: T;
-        id?: T;
-      };
   minAmount?: T;
-  allowMonthly?: T;
-  impactCards?:
-    | T
-    | {
-        amount?: T;
-        description?: T;
-        icon?: T;
-        id?: T;
-      };
   receipt?:
     | T
     | {
@@ -3040,7 +3133,6 @@ export interface DonationSettingsSelect<T extends boolean = true> {
       };
   gatewayMode?: T;
   gateway?: T;
-  upiQr?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -34,6 +34,8 @@ import { FinalCtaBanner } from '../blocks/FinalCtaBanner'
 import { EventsAndCausesSection } from '../blocks/EventsAndCausesSection'
 import { ContactInformation } from '../blocks/ContactInformation'
 import {FAQContactCTA} from "../blocks/FAQContactCTA";
+import {DonationLayout} from "../blocks/DonationLayout";
+import {LoginForm} from "../blocks/LoginForm";
 
 
 
@@ -101,6 +103,8 @@ export const Pages: CollectionConfig = {
         EventsAndCausesSection,
         ContactInformation,
         FAQContactCTA,
+        DonationLayout,
+        LoginForm,
       ],
 
     },

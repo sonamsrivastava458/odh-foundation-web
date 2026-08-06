@@ -21,7 +21,7 @@ export const Campaigns: CollectionConfig = {
     { name: 'title', type: 'text', required: true },
     slugField('title'),
     { name: 'heroImage', type: 'upload', relationTo: 'media', required: true },
-     {
+    {
       name: 'crumbs',
       type: 'array',
       labels: { singular: 'Crumb', plural: 'Crumbs' },
@@ -66,6 +66,48 @@ export const Campaigns: CollectionConfig = {
         description: 'Displays the amount raised against the goal on the campaign page.',
       },
     },
+   {
+  name: 'donation',
+  type: 'group',
+  fields: [
+    {
+      name: 'enabled',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      name: 'allowCustomAmount',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      name: 'presetAmounts',
+      type: 'array',
+      maxRows: 6,
+      fields: [
+        {
+          name: 'amount',
+          type: 'number',
+          required: true,
+        },
+        {
+          name: 'impactText',
+          type: 'text',
+          required: true,
+          admin: {
+            description:
+              'Text shown below the amount when this amount is selected.',
+          },
+        },
+        {
+          name: 'highlight',
+          type: 'checkbox',
+          defaultValue: false,
+        },
+      ],
+    },
+  ],
+},
     {
       name: 'faqs',
       type: 'array',
@@ -82,7 +124,7 @@ export const Campaigns: CollectionConfig = {
       type: 'array',
       fields: [{ name: 'image', type: 'upload', relationTo: 'media', required: true }],
     },
-       {
+    {
       name: 'donateCTA',
       type: 'group',
       fields: [

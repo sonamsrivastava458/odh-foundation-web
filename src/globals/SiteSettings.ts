@@ -18,7 +18,6 @@ export const SiteSettings: GlobalConfig = {
       type: 'tabs',
       tabs: [
         // ---------- Brand ----------
-        // ---------- Brand ----------
         {
           label: 'Brand',
           fields: [
@@ -121,7 +120,7 @@ export const SiteSettings: GlobalConfig = {
                   required: true,
                   admin: {
                     description:
-                    'Legacy footer address. Keep this until the footer is migrated to use Registered Office.',
+                      'Legacy footer address. Keep this until the footer is migrated to use Registered Office.',
                     custom: {
                       multiline: true,
                     },
@@ -159,6 +158,7 @@ export const SiteSettings: GlobalConfig = {
                       'Primary contact email.',
                   },
                 },
+              
                 {
                   name: 'hours',
                   label: 'Office Hours',
@@ -468,6 +468,137 @@ export const SiteSettings: GlobalConfig = {
                           ['careers', 'login', 'custom'].includes(
                             siblingData?.type,
                           ),
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        // ---------- Bank Details ----------
+        {
+          label: 'Bank Details',
+          fields: [
+            {
+              name: 'bankDetails',
+              type: 'group',
+              label: false,
+              admin: {
+                description:
+                  'Direct bank transfer details shown on the Donate / Contact page.',
+              },
+              fields: [
+                {
+                  name: 'heading',
+                  type: 'text',
+                  defaultValue: 'Bank Details',
+                },
+
+                {
+                  name: 'subHeading',
+                  type: 'text',
+                  defaultValue:
+                    'Direct Bank Transfer through Net Banking, QR Code or Cheque',
+                },
+
+                {
+                  name: 'accounts',
+                  type: 'array',
+                  labels: {
+                    singular: 'Bank Account',
+                    plural: 'Bank Accounts',
+                  },
+                  admin: {
+                    description:
+                      'Add one entry per bank account (e.g. ICICI Bank, Punjab National Bank).',
+                  },
+                  fields: [
+                    {
+                      name: 'bankLogo',
+                      label: 'Bank Logo',
+                      type: 'upload',
+                      relationTo: 'graphics',
+                      admin: {
+                        description: 'Bank logo shown above the account details table.',
+                      },
+                    },
+
+                    {
+                      name: 'bankName',
+                      type: 'text',
+                      admin: {
+                        description: 'Example: ICICI Bank',
+                      },
+                    },
+
+                    {
+                      name: 'beneficiaryAccountName',
+                      label: 'Beneficiary Account Name',
+                      type: 'text',
+                      required: true,
+                      defaultValue: 'ODH FOUNDATION',
+                    },
+
+                    {
+                      name: 'accountNumber',
+                      type: 'text',
+                      required: true,
+                    },
+
+                    {
+                      name: 'accountType',
+                      type: 'select',
+                      required: true,
+                      defaultValue: 'current',
+                      options: [
+                        { label: 'Current Account', value: 'current' },
+                        { label: 'Savings Account', value: 'savings' },
+                      ],
+                    },
+
+                    {
+                      name: 'ifscCode',
+                      label: 'IFSC Code',
+                      type: 'text',
+                      required: true,
+                    },
+                  ],
+                },
+
+                {
+                  name: 'qr',
+                  label: 'Donation QR Section',
+                  type: 'group',
+                  fields: [
+                    {
+                      name: 'heading',
+                      type: 'text',
+                      defaultValue: 'Scan QR Code to Donate',
+                    },
+
+                    {
+                      name: 'qrImage',
+                      label: 'QR Code Image',
+                      type: 'upload',
+                      relationTo: 'graphics',
+                    },
+
+                    {
+                      name: 'organizationName',
+                      type: 'text',
+                      defaultValue: 'ODH FOUNDATION',
+                    },
+
+                    {
+                      name: 'instructions',
+                      type: 'textarea',
+                      defaultValue:
+                        'In case you have donated directly through Bank Transfer, QR Code or Cheque, kindly WhatsApp your details such as Name, Full address, Pan and Aadhar for Tax Exemption receipt on +91-9795505106 Or Email us on contactus@odhfoundation.org',
+                      admin: {
+                        custom: {
+                          multiline: true,
+                        },
                       },
                     },
                   ],
