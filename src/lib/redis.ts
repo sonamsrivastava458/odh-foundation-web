@@ -1,0 +1,7 @@
+import Redis from 'ioredis'
+
+export const redis = new Redis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: 2,
+  enableReadyCheck: true,
+  lazyConnect: true,
+})

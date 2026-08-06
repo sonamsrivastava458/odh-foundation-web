@@ -2,6 +2,12 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sendFormNotification } from '../../../../hooks/sendFormNotification'
 import { Media } from '@/payload-types'
+// import { NextResponse } from 'next/server'
+// import { getClientIP } from '@/security/clientIP'
+// import { formLimiter } from '@/security/rateLimiter'
+// import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
+// import { RATE_LIMITS } from '@/security/rateLimitConfig'
+// import { RateLimiterRes } from 'rate-limiter-flexible'
 
 // File uploads ke liye Buffer chahiye — edge runtime pe available nahi hota.
 export const runtime = 'nodejs'
@@ -115,6 +121,35 @@ const validateFileFields = (
 }
 
 export async function POST(request: Request) {
+  //  const ip = await getClientIP()
+  //  let rateLimitRes: RateLimiterRes
+  //  try {
+  //    rateLimitRes = await formLimiter.consume(ip)
+  //  } catch (err: any) {
+  //    const response = NextResponse.json(
+  //      {
+  //        error: 'Too many requests.',
+  //      },
+  //      {
+  //        status: 429,
+  //      },
+  //    )
+ 
+  //    setRateLimitHeaders(response, {
+  //      limit: RATE_LIMITS.forms.points,
+  //      remaining: 0,
+  //      reset: Math.ceil(
+  //        Date.now() / 1000 +
+  //        err.msBeforeNext / 1000,
+  //      ),
+  //      retryAfter: Math.ceil(
+  //        err.msBeforeNext / 1000,
+  //      ),
+  //    })
+ 
+  //    return response
+  //  }
+
   const payload = await getPayload({ config })
 
   const contentType = request.headers.get('content-type') || ''
@@ -273,6 +308,11 @@ export async function POST(request: Request) {
   } catch (err) {
     payload.logger.error(`sendFormNotification failed: ${err}`)
   }
-
-  return Response.json({ success: true })
+  const response = Response.json({ success: true })
+  // setRateLimitHeaders(response, {
+  //   limit: RATE_LIMITS.forms.points,
+  //   remaining: rateLimitRes.remainingPoints,
+  //   reset: Math.ceil(Date.now() / 1000 + rateLimitRes.msBeforeNext / 1000),
+  // })
+  return response
 }

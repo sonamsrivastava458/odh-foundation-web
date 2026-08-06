@@ -2,20 +2,29 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import crypto from 'crypto'
 import { z } from 'zod'
+// import { NextResponse } from 'next/server'
+// import { getClientIP } from '@/security/clientIP'
+// import { donationLimiter } from '@/security/rateLimiter'
+// import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
+// import { RATE_LIMITS } from '@/security/rateLimitConfig'
+
+// import type {
+//   RateLimiterRes,
+// } from 'rate-limiter-flexible'
 
 const donateSchema = z.object({
   donorName: z.string().min(1).max(200),
   email: z.string().email(),
   phone: z.string().min(10).max(15),
-pan: z
-  .string()
-  .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'Invalid PAN')
-  .optional(),
+  pan: z
+    .string()
+    .regex(/^[A-Z]{5}[0-9]{4}[A-Z]$/, 'Invalid PAN')
+    .optional(),
   address: z.string().optional(),
   amount: z.number().int().min(100), // whole rupees, ≥ ₹100 — spec §7
   frequency: z.enum(['one-time', 'monthly']).optional(),
-campaign: z.coerce.number().int().optional(),
-project: z.coerce.number().int().optional(),
+  campaign: z.coerce.number().int().optional(),
+  project: z.coerce.number().int().optional(),
   consent: z.object({
     termsAccepted: z.boolean().optional(),
     contactPermission: z.boolean().optional(),
@@ -23,6 +32,34 @@ project: z.coerce.number().int().optional(),
 })
 
 export async function POST(request: Request) {
+  // const ip = await getClientIP()
+  // let rateLimitRes: RateLimiterRes
+  // try {
+  //   rateLimitRes = await donationLimiter.consume(ip)
+  // } catch (err: any) {
+  //   const response = NextResponse.json(
+  //     {
+  //       error: 'Too many requests.',
+  //     },
+  //     {
+  //       status: 429,
+  //     },
+  //   )
+
+  //   setRateLimitHeaders(response, {
+  //     limit: RATE_LIMITS.donation.points,
+  //     remaining: 0,
+  //     reset: Math.ceil(
+  //       Date.now() / 1000 +
+  //       err.msBeforeNext / 1000,
+  //     ),
+  //     retryAfter: Math.ceil(
+  //       err.msBeforeNext / 1000,
+  //     ),
+  //   })
+
+  //   return response
+  // }
   const payload = await getPayload({ config })
 
   let body: unknown
@@ -82,7 +119,7 @@ export async function POST(request: Request) {
     data: { gatewayTxnId: txnid },
   })
 
-  return Response.json({
+  const response = Response.json({
     key,
     txnid,
     amount: amountStr,
@@ -98,4 +135,11 @@ export async function POST(request: Request) {
         ? 'https://secure.payu.in/_payment'
         : 'https://test.payu.in/_payment',
   })
+  // setRateLimitHeaders(response, {
+  //   limit: RATE_LIMITS.donation.points,
+  //   remaining: rateLimitRes.remainingPoints,
+  //   reset: Math.ceil(Date.now() / 1000 + rateLimitRes.msBeforeNext / 1000),
+  // })
+
+  return response
 }
