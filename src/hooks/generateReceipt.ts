@@ -99,7 +99,7 @@ export const generateReceipt: CollectionBeforeChangeHook<Donation> = async ({
     donorEmail: email,
     donorPan: pan ?? undefined,
     amount,
-    frequency,
+    frequency: frequency ?? 'one-time',
     orgName: siteSettings.siteName,
     orgPan: siteSettings.registrations?.pan ?? undefined,
     org80G: siteSettings.registrations?.reg80G ?? undefined,
