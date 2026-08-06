@@ -149,14 +149,14 @@ export const Donations: CollectionConfig = {
     {
       name: 'currency',
       type: 'select',
-      required: true,
+      // required: true,
       defaultValue: 'INR',
       options: [{ label: 'INR', value: 'INR' }],
     },
     {
       name: 'frequency',
       type: 'select',
-      required: true,
+      // required: true,
       defaultValue: 'one-time',
       options: [
         { label: 'One-time', value: 'one-time' },
@@ -244,7 +244,7 @@ export const Donations: CollectionConfig = {
       name: 'consent',
       type: 'group',
       fields: [
-        { name: 'termsAccepted', type: 'checkbox', required: true, defaultValue: false },
+        { name: 'termsAccepted', type: 'checkbox',defaultValue: false },
         { name: 'contactPermission', type: 'checkbox', defaultValue: false },
       ],
     },

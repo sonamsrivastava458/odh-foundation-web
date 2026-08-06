@@ -13,13 +13,13 @@ pan: z
   .optional(),
   address: z.string().optional(),
   amount: z.number().int().min(100), // whole rupees, ≥ ₹100 — spec §7
-  frequency: z.enum(['one-time', 'monthly']),
+  frequency: z.enum(['one-time', 'monthly']).optional(),
 campaign: z.coerce.number().int().optional(),
 project: z.coerce.number().int().optional(),
   consent: z.object({
-    termsAccepted: z.literal(true),
+    termsAccepted: z.boolean().optional(),
     contactPermission: z.boolean().optional(),
-  }),
+  }).optional(),
 })
 
 export async function POST(request: Request) {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       address: data.address,
       amount: data.amount,
       currency: 'INR',
-      frequency: data.frequency,
+      frequency: data.frequency ?? 'one-time',
       campaign: data.campaign,
       project: data.project,
       gateway: 'payu',

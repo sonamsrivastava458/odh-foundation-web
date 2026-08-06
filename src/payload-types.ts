@@ -1370,8 +1370,8 @@ export interface Donation {
    * In rupees. This min is a UI guard only — the donate API independently rejects anything below ₹100 server-side (spec §7).
    */
   amount: number;
-  currency: 'INR';
-  frequency: 'one-time' | 'monthly';
+  currency?: 'INR' | null;
+  frequency?: ('one-time' | 'monthly') | null;
   /**
    * Set when a monthly mandate is created. Links to the matching row in Subscriptions.
    */
@@ -1399,8 +1399,8 @@ export interface Donation {
    * Set automatically once the receipt PDF is generated.
    */
   receiptPdfUrl?: string | null;
-  consent: {
-    termsAccepted: boolean;
+  consent?: {
+    termsAccepted?: boolean | null;
     contactPermission?: boolean | null;
   };
   updatedAt: string;
