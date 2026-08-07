@@ -1,7 +1,18 @@
 import Redis from 'ioredis'
 
 export const redis = new Redis(process.env.REDIS_URL!, {
-  maxRetriesPerRequest: 2,
-  enableReadyCheck: true,
-  lazyConnect: true,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  lazyConnect: false,
+})
+redis.on('connect', () => {
+  console.log('✅ Redis Connected')
+})
+
+redis.on('ready', () => {
+  console.log('✅ Redis Ready')
+})
+
+redis.on('error', (err) => {
+  console.error('❌ Redis Error:', err)
 })

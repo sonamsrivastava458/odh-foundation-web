@@ -83,6 +83,7 @@ export interface Config {
     subscriptions: Subscription;
     'form-submissions': FormSubmission;
     redirects: Redirect;
+    'rate-limit-logs': RateLimitLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
+    'rate-limit-logs': RateLimitLogsSelect<false> | RateLimitLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1498,6 +1500,23 @@ export interface Redirect {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limit-logs".
+ */
+export interface RateLimitLog {
+  id: number;
+  ip: string;
+  endpoint: string;
+  method: string;
+  country?: string | null;
+  userAgent?: string | null;
+  reason?: string | null;
+  remainingPoints?: number | null;
+  retryAfter?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1583,6 +1602,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: number | Redirect;
+      } | null)
+    | ({
+        relationTo: 'rate-limit-logs';
+        value: number | RateLimitLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2675,6 +2698,22 @@ export interface RedirectsSelect<T extends boolean = true> {
   from?: T;
   to?: T;
   type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rate-limit-logs_select".
+ */
+export interface RateLimitLogsSelect<T extends boolean = true> {
+  ip?: T;
+  endpoint?: T;
+  method?: T;
+  country?: T;
+  userAgent?: T;
+  reason?: T;
+  remainingPoints?: T;
+  retryAfter?: T;
   updatedAt?: T;
   createdAt?: T;
 }

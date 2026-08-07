@@ -2,15 +2,33 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import crypto from 'crypto'
 import { z } from 'zod'
-// import { NextResponse } from 'next/server'
-// import { getClientIP } from '@/security/clientIP'
-// import { donationLimiter } from '@/security/rateLimiter'
-// import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
-// import { RATE_LIMITS } from '@/security/rateLimitConfig'
+import { NextResponse } from 'next/server'
+import { getClientIP } from '@/security/clientIP'
+import { donationLimiter } from '@/security/rateLimiter'
+import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
+import { RATE_LIMITS } from '@/security/rateLimitConfig'
+import { RateLimiterRes } from 'rate-limiter-flexible'
+import { logRateLimit } from '@/security/rateLimitLogger'
+import {
+  getCountry,
+  getUserAgent,
+} from '@/security/requestInfo'
+import { isBlocked, registerViolation } from '@/security/blockList'
+import { isWhitelisted } from '@/security/whitelist'
 
-// import type {
-//   RateLimiterRes,
-// } from 'rate-limiter-flexible'
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  })
+}
+
 
 const donateSchema = z.object({
   donorName: z.string().min(1).max(200),
@@ -32,36 +50,92 @@ const donateSchema = z.object({
 })
 
 export async function POST(request: Request) {
-  // const ip = await getClientIP()
-  // let rateLimitRes: RateLimiterRes
-  // try {
-  //   rateLimitRes = await donationLimiter.consume(ip)
-  // } catch (err: any) {
-  //   const response = NextResponse.json(
-  //     {
-  //       error: 'Too many requests.',
-  //     },
-  //     {
-  //       status: 429,
-  //     },
-  //   )
+  console.log('====== DONATE API HIT ======')
+  const ip = await getClientIP()
+  let rateLimitRes: RateLimiterRes | undefined
+  let whitelisted = isWhitelisted(ip)
+  if (whitelisted) {
+    console.log(`Whitelisted IP: ${ip}`)
+  }
+  else {
+    const blockresult = await registerViolation(ip)
+    if (await isBlocked(ip)) {
 
-  //   setRateLimitHeaders(response, {
-  //     limit: RATE_LIMITS.donation.points,
-  //     remaining: 0,
-  //     reset: Math.ceil(
-  //       Date.now() / 1000 +
-  //       err.msBeforeNext / 1000,
-  //     ),
-  //     retryAfter: Math.ceil(
-  //       err.msBeforeNext / 1000,
-  //     ),
-  //   })
+      await logRateLimit({
+        ip,
+        endpoint: '/api/donate/initiate',
+        method: 'POST',
 
-  //   return response
-  // }
+        country: getCountry(request),
+
+        userAgent: getUserAgent(request),
+
+        reason: 'Temporary block due to repeated abuse (rate limit exceeded).',
+
+        duration: blockresult.label,
+        remainingPoints: 0,
+      })
+
+      return NextResponse.json(
+        {
+          error: 'Your IP has been temporarily blocked.',
+        },
+        {
+          status: 403,
+        },
+      )
+    }
+    try {
+      rateLimitRes = await donationLimiter.consume(ip)
+    } catch (err: unknown) {
+      if (!(err instanceof RateLimiterRes)) {
+        throw err
+      }
+      await logRateLimit({
+        ip,
+        endpoint: '/api/donate/initiate',
+        method: 'POST',
+        country: getCountry(request),
+        userAgent: getUserAgent(request),
+        reason: 'Temporary block due to repeated abuse (rate limit exceeded).',
+        remainingPoints: 0,
+        retryAfter: Math.ceil(
+          err.msBeforeNext / 1000,
+        ),
+        duration: blockresult.label,
+      })
+      const response = NextResponse.json(
+        {
+          error: blockresult.blocked
+            ? 'Your IP has been temporarily blocked.'
+            : 'Too many requests.',
+
+          code: blockresult.blocked
+            ? 'IP_BLOCKED'
+            : 'RATE_LIMIT',
+        },
+        {
+          status: blockresult.blocked
+            ? 403
+            : 429,
+        },
+      )
+      setRateLimitHeaders(response, {
+        limit: RATE_LIMITS.donation.points,
+        remaining: 0,
+        reset: Math.ceil(
+          Date.now() / 1000 +
+          err.msBeforeNext / 1000,
+        ),
+        retryAfter: Math.ceil(
+          err.msBeforeNext / 1000,
+        ),
+      })
+      return response
+    }
+  }
   const payload = await getPayload({ config })
-
+  console.log('Payload initialized')
   let body: unknown
   try {
     body = await request.json()
@@ -119,7 +193,7 @@ export async function POST(request: Request) {
     data: { gatewayTxnId: txnid },
   })
 
-  const response = Response.json({
+  const response = NextResponse.json({
     key,
     txnid,
     amount: amountStr,
@@ -134,12 +208,29 @@ export async function POST(request: Request) {
       process.env.PAYU_MODE === 'live'
         ? 'https://secure.payu.in/_payment'
         : 'https://test.payu.in/_payment',
-  })
-  // setRateLimitHeaders(response, {
-  //   limit: RATE_LIMITS.donation.points,
-  //   remaining: rateLimitRes.remainingPoints,
-  //   reset: Math.ceil(Date.now() / 1000 + rateLimitRes.msBeforeNext / 1000),
-  // })
+  },{
+    headers: corsHeaders,
+  }
+)
+  if (
+    !isWhitelisted(ip) &&
+    rateLimitRes
+  ) {
 
+    setRateLimitHeaders(response, {
+
+      limit: RATE_LIMITS.donation.points,
+
+      remaining:
+        rateLimitRes.remainingPoints,
+
+      reset:
+        Math.ceil(
+          Date.now() / 1000 +
+          rateLimitRes.msBeforeNext / 1000
+        )
+
+    })
+  }
   return response
 }

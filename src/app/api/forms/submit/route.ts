@@ -2,12 +2,19 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { sendFormNotification } from '../../../../hooks/sendFormNotification'
 import { Media } from '@/payload-types'
-// import { NextResponse } from 'next/server'
-// import { getClientIP } from '@/security/clientIP'
-// import { formLimiter } from '@/security/rateLimiter'
-// import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
-// import { RATE_LIMITS } from '@/security/rateLimitConfig'
-// import { RateLimiterRes } from 'rate-limiter-flexible'
+import { NextResponse } from 'next/server'
+import { getClientIP } from '@/security/clientIP'
+import { formLimiter } from '@/security/rateLimiter'
+import { setRateLimitHeaders } from '@/security/rateLimitHeaders'
+import { RATE_LIMITS } from '@/security/rateLimitConfig'
+import { RateLimiterRes } from 'rate-limiter-flexible'
+import { logRateLimit } from '@/security/rateLimitLogger'
+import {
+  getCountry,
+  getUserAgent,
+} from '@/security/requestInfo'
+import { isBlocked, registerViolation } from '@/security/blockList'
+import { isWhitelisted } from '@/security/whitelist'
 
 // File uploads ke liye Buffer chahiye — edge runtime pe available nahi hota.
 export const runtime = 'nodejs'
@@ -121,35 +128,98 @@ const validateFileFields = (
 }
 
 export async function POST(request: Request) {
-  //  const ip = await getClientIP()
-  //  let rateLimitRes: RateLimiterRes
-  //  try {
-  //    rateLimitRes = await formLimiter.consume(ip)
-  //  } catch (err: any) {
-  //    const response = NextResponse.json(
-  //      {
-  //        error: 'Too many requests.',
-  //      },
-  //      {
-  //        status: 429,
-  //      },
-  //    )
- 
-  //    setRateLimitHeaders(response, {
-  //      limit: RATE_LIMITS.forms.points,
-  //      remaining: 0,
-  //      reset: Math.ceil(
-  //        Date.now() / 1000 +
-  //        err.msBeforeNext / 1000,
-  //      ),
-  //      retryAfter: Math.ceil(
-  //        err.msBeforeNext / 1000,
-  //      ),
-  //    })
- 
-  //    return response
-  //  }
+  const ip = await getClientIP()
+  let rateLimitRes: RateLimiterRes | undefined
+  let whitelisted = isWhitelisted(ip)
+  if( whitelisted) {
+    console.log(`Whitelisted IP: ${ip}`)
+  }
+  else{
+  const blockresult = await registerViolation(ip)
+  if (await isBlocked(ip)) {
 
+    await logRateLimit({
+      ip,
+      endpoint: '/api/forms/submit',
+      method: 'POST',
+
+      country: getCountry(request),
+
+      userAgent: getUserAgent(request),
+
+      reason: 'Temporary block due to repeated abuse (rate limit exceeded).',
+
+      duration: blockresult.label,
+      remainingPoints: 0,
+    })
+
+    return NextResponse.json(
+      {
+        error: 'Your IP has been temporarily blocked.',
+      },
+      {
+        status: 403,
+      },
+    )
+  }
+  try {
+    rateLimitRes = await formLimiter.consume(ip)
+  } catch (err: unknown) {
+    if (!(err instanceof RateLimiterRes)) {
+      throw err
+    }
+    await logRateLimit({
+      ip,
+      endpoint: '/api/forms/submit',
+      method: 'POST',
+
+      country: getCountry(request),
+
+      userAgent: getUserAgent(request),
+
+      reason: 'Temporary block due to repeated abuse (rate limit exceeded).',
+
+
+      remainingPoints: 0,
+
+      retryAfter: Math.ceil(
+        err.msBeforeNext / 1000,
+      ),
+      duration: blockresult.label,
+    })
+
+    const response = NextResponse.json(
+      {
+        error: blockresult.blocked
+          ? 'Your IP has been temporarily blocked.'
+          : 'Too many requests.',
+
+        code: blockresult.blocked
+          ? 'IP_BLOCKED'
+          : 'RATE_LIMIT',
+      },
+      {
+        status: blockresult.blocked
+          ? 403
+          : 429,
+      },
+    )
+
+    setRateLimitHeaders(response, {
+      limit: RATE_LIMITS.form.points,
+      remaining: 0,
+      reset: Math.ceil(
+        Date.now() / 1000 +
+        err.msBeforeNext / 1000,
+      ),
+      retryAfter: Math.ceil(
+        err.msBeforeNext / 1000,
+      ),
+    })
+
+    return response
+  }
+}
   const payload = await getPayload({ config })
 
   const contentType = request.headers.get('content-type') || ''
@@ -257,10 +327,10 @@ export async function POST(request: Request) {
 
   // Files pehle `media` collection mein upload karo, phir unke doc IDs ko
   // form-submission ke `files` array mein reference ke taur pe save karo.
- const uploadedFiles: {
-  fieldName: string
-  file: Media | number
-}[] = []
+  const uploadedFiles: {
+    fieldName: string
+    file: Media | number
+  }[] = []
   try {
     for (const { field, file } of filePayload) {
       const buffer = Buffer.from(await file.arrayBuffer())
@@ -308,11 +378,26 @@ export async function POST(request: Request) {
   } catch (err) {
     payload.logger.error(`sendFormNotification failed: ${err}`)
   }
-  const response = Response.json({ success: true })
-  // setRateLimitHeaders(response, {
-  //   limit: RATE_LIMITS.forms.points,
-  //   remaining: rateLimitRes.remainingPoints,
-  //   reset: Math.ceil(Date.now() / 1000 + rateLimitRes.msBeforeNext / 1000),
-  // })
+  const response = NextResponse.json({ success: true })
+ if (
+    !isWhitelisted(ip) &&
+    rateLimitRes
+  ) {
+
+    setRateLimitHeaders(response, {
+
+      limit: RATE_LIMITS.donation.points,
+
+      remaining:
+        rateLimitRes.remainingPoints,
+
+      reset:
+        Math.ceil(
+          Date.now() / 1000 +
+          rateLimitRes.msBeforeNext / 1000
+        )
+
+    })
+  }
   return response
 }

@@ -23,6 +23,7 @@ import { Donations } from './collections/Donations'
 import { Subscriptions } from './collections/Subscriptions'
 import { FormSubmissions } from './collections/FormSubmissions'
 import { Redirects } from './collections/Redirects'
+import { RateLimitLogs } from './collections/RateLimitLogs'
 
 
 
@@ -68,6 +69,7 @@ export default buildConfig(
       Subscriptions,
       FormSubmissions,
       Redirects,
+      RateLimitLogs,
     ],
     globals: [SiteSettings, Navigation, DonationSettings],
     editor: lexicalEditor(),
